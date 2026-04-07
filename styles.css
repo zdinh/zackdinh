@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap");
+
 :root {
   color-scheme: light;
   --text: #ffffff;
@@ -47,8 +49,9 @@ img {
 }
 
 .site-brand {
+  font-family: "Gowun Batang", serif;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -125,6 +128,7 @@ img {
 }
 
 .contact-title-column h1 {
+  font-family: "Gowun Batang", serif;
   margin: 0;
   font-size: clamp(2.5rem, 6vw, 5rem);
   line-height: 0.95;
@@ -168,6 +172,7 @@ img {
 }
 
 .geographer-copy-column h1 {
+  font-family: "Gowun Batang", serif;
   margin: 0 0 1.5rem;
   font-size: clamp(2.4rem, 5vw, 4.5rem);
   line-height: 0.95;
@@ -220,6 +225,7 @@ img {
 }
 
 .category-card-body h2 {
+  font-family: "Gowun Batang", serif;
   margin: 0 0 0.75rem;
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
