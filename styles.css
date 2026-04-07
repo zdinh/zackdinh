@@ -111,7 +111,8 @@ img {
 
 .contact-page,
 .geographer-page,
-.categories-page {
+.categories-page,
+.woodworking-page {
   background: #ffffff;
   color: #111111;
 }
@@ -236,18 +237,6 @@ img {
   padding-top: 0.85rem;
 }
 
-.category-details summary {
-  cursor: pointer;
-  list-style: none;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #222222;
-}
-
-.category-details summary::-webkit-details-marker {
-  display: none;
-}
-
 .category-details p {
   margin: 0.95rem 0 0;
   max-width: 34rem;
@@ -261,6 +250,49 @@ img {
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 0.16em;
+}
+
+.woodworking-layout {
+  width: min(1780px, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 6rem 0 3rem;
+}
+
+.woodworking-hero h1 {
+  font-family: "Gowun Batang", serif;
+  margin: 0 0 2rem;
+  text-align: center;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+}
+
+.woodworking-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.woodworking-gallery img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+}
+
+.woodworking-copy {
+  max-width: 760px;
+  margin: 2.5rem auto 0;
+  text-align: center;
+}
+
+.woodworking-copy p {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.woodworking-copy a {
+  color: #6c6c6c;
+  text-decoration: none;
 }
 
 @media (max-width: 720px) {
@@ -288,6 +320,15 @@ img {
   }
 
   .category-card {
+    grid-template-columns: 1fr;
+  }
+
+  .woodworking-layout {
+    width: calc(100% - 2.5rem);
+    padding: 6rem 0 3rem;
+  }
+
+  .woodworking-gallery {
     grid-template-columns: 1fr;
   }
 }
