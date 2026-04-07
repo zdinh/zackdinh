@@ -29,7 +29,7 @@ img {
 }
 
 .site-header {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   z-index: 10;
@@ -106,7 +106,9 @@ img {
   }
 }
 
-.contact-page {
+.contact-page,
+.geographer-page,
+.categories-page {
   background: #ffffff;
   color: #111111;
 }
@@ -142,11 +144,144 @@ img {
   text-align: left;
 }
 
+.geographer-layout {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+  gap: 3rem;
+  align-items: center;
+  width: min(1100px, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 6rem 0 3rem;
+}
+
+.geographer-image-column {
+  display: flex;
+  justify-content: center;
+}
+
+.geographer-image {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.geographer-copy-column h1 {
+  margin: 0 0 1.5rem;
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  line-height: 0.95;
+}
+
+.geographer-copy-column p {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.geographer-copy-column a {
+  color: #6c6c6c;
+  font-weight: 700;
+}
+
+.categories-layout {
+  width: min(1200px, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 6rem 0 3rem;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+.category-card {
+  display: grid;
+  grid-template-columns: minmax(260px, 420px) minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+  background: #ffffff;
+}
+
+.category-card-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center;
+}
+
+.category-card:first-child .category-card-image {
+  object-position: top center;
+}
+
+.category-card-body {
+  padding-top: 0;
+}
+
+.category-card-body h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+}
+
+.category-details {
+  border-top: 1px solid #d9d9d9;
+  padding-top: 0.85rem;
+}
+
+.category-details summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #222222;
+}
+
+.category-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.category-details p {
+  margin: 0.95rem 0 0;
+  max-width: 34rem;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.category-card a,
+.pseudo-link {
+  color: #111111;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
 @media (max-width: 720px) {
   .contact-layout {
     grid-template-columns: 1fr;
     gap: 2rem;
     width: calc(100% - 2.5rem);
     padding: 6rem 0 3rem;
+  }
+
+  .geographer-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    width: calc(100% - 2.5rem);
+    padding: 6rem 0 3rem;
+  }
+
+  .categories-layout {
+    width: calc(100% - 2.5rem);
+    padding: 6rem 0 3rem;
+  }
+
+  .category-grid {
+    gap: 2rem;
+  }
+
+  .category-card {
+    grid-template-columns: 1fr;
   }
 }
