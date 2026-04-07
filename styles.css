@@ -60,6 +60,15 @@ img {
   font-weight: 700;
 }
 
+.site-header-light {
+  color: #6c6c6c;
+}
+
+.site-header-light .site-brand,
+.site-header-light .site-nav a {
+  text-shadow: none;
+}
+
 .hero {
   position: relative;
   min-height: 100svh;
@@ -94,5 +103,50 @@ img {
   .site-nav {
     gap: 0.8rem;
     font-size: 0.88rem;
+  }
+}
+
+.contact-page {
+  background: #ffffff;
+  color: #111111;
+}
+
+.contact-layout {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(320px, 1.4fr);
+  gap: 4rem;
+  align-items: center;
+  width: min(980px, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 5rem 0 3rem;
+}
+
+.contact-title-column h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 0.95;
+}
+
+.contact-details-column {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: start;
+  align-content: start;
+}
+
+.contact-details-column p {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  text-align: left;
+}
+
+@media (max-width: 720px) {
+  .contact-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    width: calc(100% - 2.5rem);
+    padding: 6rem 0 3rem;
   }
 }
