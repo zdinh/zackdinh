@@ -98,6 +98,24 @@ img {
     linear-gradient(180deg, rgba(10, 10, 10, 0.14) 0%, rgba(10, 10, 10, 0.28) 45%, rgba(10, 10, 10, 0.42) 100%);
 }
 
+.hero-caption {
+  position: absolute;
+  left: 50%;
+  top: 73%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: min(560px, calc(100% - 3rem));
+  text-align: center;
+}
+
+.hero-caption p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  text-shadow: 0 1px 20px rgba(0, 0, 0, 0.35);
+}
+
 @media (max-width: 720px) {
   .site-header {
     padding: 1.1rem 1rem;
@@ -106,6 +124,10 @@ img {
   .site-nav {
     gap: 0.8rem;
     font-size: 0.88rem;
+  }
+
+  .hero-caption {
+    width: calc(100% - 2rem);
   }
 }
 
