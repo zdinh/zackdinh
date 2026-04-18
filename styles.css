@@ -488,7 +488,33 @@ img {
 }
 
 .category-card-image-frame {
+  position: relative;
   overflow: hidden;
+}
+
+.category-image-tooltip {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.8rem;
+  background: rgba(17, 17, 17, 0.88);
+  color: #ffffff;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(0.35rem);
+  pointer-events: none;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.category-card-image-frame-tooltip:hover .category-image-tooltip,
+.category-card-image-frame-tooltip:focus-within .category-image-tooltip {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .category-card-image-zoomed {
@@ -496,7 +522,7 @@ img {
   transform-origin: center;
 }
 
-.category-card:first-child .category-card-image {
+.category-card-image-top {
   object-position: top center;
 }
 
