@@ -179,6 +179,8 @@ img {
 }
 
 .contact-icon-link {
+  appearance: none;
+  background: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -187,6 +189,7 @@ img {
   border: 1px solid #d9d9d9;
   border-radius: 999px;
   color: #111111;
+  cursor: pointer;
   transition:
     background-color 120ms ease,
     border-color 120ms ease,
@@ -203,6 +206,32 @@ img {
   width: 1.3rem;
   height: 1.3rem;
   fill: currentColor;
+}
+
+.contact-copy-status {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 20;
+  margin: 0;
+  padding: 0.7rem 0.95rem;
+  border-radius: 0.8rem;
+  background: rgba(17, 17, 17, 0.92);
+  color: #ffffff;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translateY(0.4rem);
+  pointer-events: none;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.contact-copy-status-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .about-layout {
