@@ -553,6 +553,7 @@ img {
   align-items: center;
   gap: 0.35rem;
   margin-top: 0.75rem;
+  color: inherit;
   padding: 0.45rem 0.8rem;
   border: 1px solid #d9d9d9;
   border-radius: 999px;
@@ -735,6 +736,26 @@ img {
 .woodworking-copy a {
   color: #6c6c6c;
   text-decoration: none;
+}
+
+.woodworking-copy a.publication-link {
+  color: inherit;
+}
+
+.woodworking-order-link {
+  margin-bottom: 0;
+}
+
+.woodworking-photo-credit {
+  font-size: 0.92rem;
+}
+
+.woodworking-photo-credit a {
+  font-size: 0.92rem;
+}
+
+.woodworking-copy a.publication-link {
+  margin-top: 0;
 }
 
 @media (max-width: 720px) {
