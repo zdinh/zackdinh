@@ -50,6 +50,9 @@ img {
 }
 
 .site-brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.4rem;
   font-family: "Gowun Batang", serif;
   font-size: 1rem;
   font-weight: 1000;
