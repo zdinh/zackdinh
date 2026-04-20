@@ -126,12 +126,29 @@ img {
 
 @media (max-width: 720px) {
   .site-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.75rem;
     padding: 1.1rem 1rem;
+  }
+
+  .site-header-brand-group {
+    min-width: 0;
+  }
+
+  .site-header-back-link {
+    max-width: 100%;
+    padding: 0.28rem 0.45rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
   }
 
   .site-nav {
     gap: 0.8rem;
     font-size: 0.88rem;
+    justify-self: end;
+    align-self: start;
   }
 
   .hero-caption {
@@ -652,7 +669,7 @@ img {
     grid-template-columns: 1fr;
     gap: 2rem;
     width: calc(100% - 2.5rem);
-    padding: 6rem 0 3rem;
+    padding: 8.75rem 0 3rem;
   }
 
   .geographer-resume {
@@ -674,7 +691,7 @@ img {
 
   .woodworking-layout {
     width: calc(100% - 2.5rem);
-    padding: 6rem 0 3rem;
+    padding: 8.75rem 0 3rem;
   }
 
   .woodworking-gallery {
