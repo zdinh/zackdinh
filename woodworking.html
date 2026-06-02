@@ -2,12 +2,86 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=/wooden-purse.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Redirecting | Zack Dinh</title>
-    <link rel="canonical" href="/wooden-purse.html" />
+    <title>Woodworking | Zack Dinh</title>
+    <meta
+      name="description"
+      content="Woodworking projects by Zack Dinh."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260601-1" />
   </head>
-  <body>
-    <p>Redirecting to <a href="/wooden-purse.html">Wooden purse</a>...</p>
+  <body class="woodworking-page">
+    <header class="site-header site-header-light">
+      <div class="site-header-brand-group">
+        <a class="site-brand" href="/index.html">Zack Dinh</a>
+        <a class="site-header-back-link" href="/interests.html">&lt; Back</a>
+      </div>
+
+      <details class="site-menu">
+        <summary class="site-menu-toggle" aria-label="Open navigation menu">
+          <span></span>
+          <span></span>
+        </summary>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/about.html">About</a>
+          <a href="/geography.html">Geography</a>
+          <a href="/interests.html">Interests</a>
+          <a href="/contact.html">Contact</a>
+        </nav>
+      </details>
+    </header>
+
+    <main class="woodworking-layout">
+      <section class="woodworking-hero">
+        <h1>Woodworking</h1>
+      </section>
+
+      <section class="woodworking-gallery" aria-label="Woodworking gallery">
+        <figure class="woodworking-gallery-item">
+          <img src="assets/engagementphotos-zack-abby-itlaphoto.com-105.jpg" alt="Cocktail Box" />
+          <figcaption class="woodworking-gallery-caption">
+            <span class="woodworking-gallery-caption-title">Cocktail Box</span>
+            <span class="woodworking-gallery-caption-text">Maple, walnut.</span>
+          </figcaption>
+        </figure>
+        <figure class="woodworking-gallery-item">
+          <img src="assets/IMG_2208.JPG" alt="Trophy Case" />
+          <figcaption class="woodworking-gallery-caption">
+            <span class="woodworking-gallery-caption-title">Trophy Case</span>
+            <span class="woodworking-gallery-caption-text">Lido 14 Class Association. Pine, walnut.</span>
+          </figcaption>
+        </figure>
+        <figure class="woodworking-gallery-item">
+          <img src="assets/haison-woodpurse-itlaphoto.com-9462.jpg" alt="Wooden Purse" />
+          <figcaption class="woodworking-gallery-caption">
+            <span class="woodworking-gallery-caption-title">Wooden Purse</span>
+            <span class="woodworking-gallery-caption-text">Walnut, rattan.</span>
+          </figcaption>
+        </figure>
+        <figure class="woodworking-gallery-item">
+          <img src="assets/IMG_2157.jpg" alt="Portable Vanity" />
+          <figcaption class="woodworking-gallery-caption">
+            <span class="woodworking-gallery-caption-title">Portable Vanity</span>
+            <span class="woodworking-gallery-caption-text">Cherry, walnut.</span>
+          </figcaption>
+        </figure>
+        <img src="assets/haison-woodpurse-itlaphoto.com-9445.jpg" alt="Wooden purse detail" />
+        <img src="assets/haison-woodpurse-itlaphoto.com-9451.jpg" alt="Wooden purse open view" />
+      </section>
+    </main>
+
+    <dialog class="woodworking-lightbox" aria-label="Enlarged image">
+      <div class="woodworking-lightbox-inner">
+        <button type="button" class="woodworking-lightbox-close" aria-label="Close">&times;</button>
+        <img class="woodworking-lightbox-image" alt="" />
+      </div>
+    </dialog>
+    <script src="woodworking-lightbox.js" defer></script>
   </body>
 </html>
