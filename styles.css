@@ -781,6 +781,13 @@ img {
   line-height: 1.4;
 }
 
+.woodworking-gallery-caption-meta {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  margin-top: 0.15rem;
+  opacity: 0.9;
+}
+
 @media (hover: hover) {
   .woodworking-gallery-item:hover .woodworking-gallery-caption {
     opacity: 1;
