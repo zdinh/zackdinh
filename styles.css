@@ -744,6 +744,15 @@ img {
   grid-area: 1 / 1;
 }
 
+.woodworking-gallery-link {
+  display: block;
+  width: 100%;
+}
+
+.woodworking-gallery-link img {
+  cursor: pointer;
+}
+
 .woodworking-gallery-caption {
   align-self: end;
   z-index: 1;

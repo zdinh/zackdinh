@@ -13,24 +13,15 @@
   }
 
   gallery.querySelectorAll("img").forEach((img) => {
-    const projectUrl = img.closest(".woodworking-gallery-item")?.dataset?.projectUrl;
+    if (img.closest("a")) return;
 
     img.tabIndex = 0;
     img.setAttribute("role", "button");
-
-    function activate() {
-      if (projectUrl) {
-        window.location.href = projectUrl;
-        return;
-      }
-      openLightbox(img);
-    }
-
-    img.addEventListener("click", activate);
+    img.addEventListener("click", () => openLightbox(img));
     img.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        activate();
+        openLightbox(img);
       }
     });
   });
