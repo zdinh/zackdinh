@@ -3,6 +3,7 @@ create table public.places (
   name text not null,
   area text not null,
   category text not null,
+  active boolean not null default true,
   created_at timestamptz not null default now(),
   unique (name, area, category)
 );

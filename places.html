@@ -334,29 +334,60 @@
 
       .view-table th:nth-child(1),
       .view-table td:nth-child(1) {
-        width: 34%;
+        width: 5.5rem;
+        min-width: 5.5rem;
+        text-align: center;
       }
 
       .view-table th:nth-child(2),
       .view-table td:nth-child(2) {
-        width: 34%;
+        width: 28%;
       }
 
       .view-table th:nth-child(3),
       .view-table td:nth-child(3) {
-        width: 22%;
+        width: 26%;
       }
 
       .view-table th:nth-child(4),
       .view-table td:nth-child(4) {
+        width: 18%;
+      }
+
+      .view-table th:nth-child(5),
+      .view-table td:nth-child(5) {
         width: 10%;
       }
 
-      .view-table td:not(.view-row-actions),
-      .view-table th:not(.view-row-actions-head) {
+      .view-table td.status-cell,
+      .view-table th.status-head {
+        overflow: visible;
+        text-overflow: clip;
+        white-space: nowrap;
+      }
+
+      .view-table td:not(.view-row-actions):not(.status-cell),
+      .view-table th:not(.view-row-actions-head):not(.status-head) {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 0.75rem;
+        height: 0.75rem;
+        vertical-align: middle;
+      }
+
+      .status-indicator.active {
+        border-radius: 50%;
+        background: #2d8a4e;
+      }
+
+      .status-indicator.inactive {
+        border-radius: 0;
+        background: #c53030;
       }
 
       .view-table th,
@@ -638,6 +669,7 @@
             <table class="view-table">
               <thead>
                 <tr>
+                  <th scope="col" class="status-head">Status</th>
                   <th scope="col">Place</th>
                   <th scope="col">Category</th>
                   <th scope="col">Area</th>
@@ -650,6 +682,7 @@
         </div>
         <button type="button" class="view-dialog-close" id="view-close">Close</button>
         <div id="view-row-menu" class="view-row-menu-panel">
+          <button type="button" class="view-row-menu-action" id="view-row-toggle-active">Mark inactive</button>
           <button type="button" class="view-row-menu-action" id="view-row-edit">Edit</button>
           <button type="button" class="view-row-menu-action" id="view-row-delete">Delete</button>
         </div>
@@ -903,6 +936,7 @@
       const viewRowMenu = document.getElementById("view-row-menu");
       const viewRowEdit = document.getElementById("view-row-edit");
       const viewRowDelete = document.getElementById("view-row-delete");
+      const viewRowToggleActive = document.getElementById("view-row-toggle-active");
       const addDialogTitle = document.getElementById("add-dialog-title");
       const addSubmitBtn = document.getElementById("add-submit");
       let editPlace = null;
@@ -911,6 +945,35 @@
       let activeMenuButton = null;
       let namesByArea;
       let bootstrapPromise = null;
+      let placeStatus = {};
+
+      function placeStatusKey(area, category, name) {
+        return `${area}\0${category}\0${name}`;
+      }
+
+      function isPlaceActive(area, category, name) {
+        return placeStatus[placeStatusKey(area, category, name)] !== false;
+      }
+
+      function setPlaceActive(area, category, name, active) {
+        placeStatus[placeStatusKey(area, category, name)] = active;
+      }
+
+      function clearPlaceActive(area, category, name) {
+        delete placeStatus[placeStatusKey(area, category, name)];
+      }
+
+      function resetPlaceStatus() {
+        placeStatus = {};
+      }
+
+      function createStatusIndicator(active) {
+        const indicator = document.createElement("span");
+        indicator.className = active ? "status-indicator active" : "status-indicator inactive";
+        indicator.setAttribute("aria-label", active ? "Active" : "Inactive");
+        indicator.title = active ? "Active" : "Inactive";
+        return indicator;
+      }
 
       async function bootstrapAppData() {
         if (!bootstrapPromise) {
@@ -930,6 +993,7 @@
       function resetAppData() {
         bootstrapPromise = null;
         namesByArea = undefined;
+        resetPlaceStatus();
       }
 
       const areaSelect = document.getElementById("area");
@@ -964,8 +1028,10 @@
       }
 
       function rowsToNamesByArea(rows) {
+        resetPlaceStatus();
         const data = {};
         for (const row of rows) {
+          setPlaceActive(row.area, row.category, row.name, row.active !== false);
           if (!data[row.area]) {
             data[row.area] = {};
           }
@@ -991,7 +1057,12 @@
             }
             for (const name of places) {
               if (name) {
-                rows.push({ name, area, category });
+                rows.push({
+                  name,
+                  area,
+                  category,
+                  active: isPlaceActive(area, category, name),
+                });
               }
             }
           }
@@ -1016,9 +1087,15 @@
           return loadLocalData();
         }
 
-        const { data, error } = await supabaseClient
+        let { data, error } = await supabaseClient
           .from("places")
-          .select("name, area, category");
+          .select("name, area, category, active");
+
+        if (error) {
+          const retry = await supabaseClient.from("places").select("name, area, category");
+          data = retry.data?.map((row) => ({ ...row, active: true })) ?? null;
+          error = retry.error;
+        }
 
         if (error) {
           console.error("Supabase read failed:", error);
@@ -1059,7 +1136,8 @@
         const rows = [];
         for (const area of areaNames) {
           for (const category of categoryNames) {
-            rows.push({ name: placeName, area, category });
+            setPlaceActive(area, category, placeName, true);
+            rows.push({ name: placeName, area, category, active: true });
           }
         }
 
@@ -1068,6 +1146,29 @@
         });
         if (error) {
           throw error;
+        }
+      }
+
+      async function persistSetActive(area, place, categoryKeys, active) {
+        for (const category of categoryKeys) {
+          setPlaceActive(area, category, place, active);
+        }
+
+        if (!supabaseClient) {
+          return;
+        }
+
+        for (const category of categoryKeys) {
+          const { error } = await supabaseClient
+            .from("places")
+            .update({ active })
+            .eq("name", place)
+            .eq("area", area)
+            .eq("category", category);
+
+          if (error) {
+            throw error;
+          }
         }
       }
 
@@ -1404,6 +1505,7 @@
           if (index !== -1) {
             places.splice(index, 1);
           }
+          clearPlaceActive(areaName, category, placeName);
         }
       }
 
@@ -1420,16 +1522,26 @@
           places.push(placeName);
           places.sort((a, b) => a.localeCompare(b));
         }
+        setPlaceActive(areaName, categoryName, placeName, true);
       }
 
       function getPickPool(area, category) {
         if (area === EVERYWHERE_AREA) {
-          return namesByArea[EVERYWHERE_AREA]?.[category] ?? [];
+          return (namesByArea[EVERYWHERE_AREA]?.[category] ?? []).filter((name) =>
+            isPlaceActive(EVERYWHERE_AREA, category, name)
+          );
         }
 
-        const pool = new Set(namesByArea[area]?.[category] ?? []);
-        for (const place of namesByArea[EVERYWHERE_AREA]?.[category] ?? []) {
-          pool.add(place);
+        const pool = new Set();
+        for (const name of namesByArea[area]?.[category] ?? []) {
+          if (isPlaceActive(area, category, name)) {
+            pool.add(name);
+          }
+        }
+        for (const name of namesByArea[EVERYWHERE_AREA]?.[category] ?? []) {
+          if (isPlaceActive(EVERYWHERE_AREA, category, name)) {
+            pool.add(name);
+          }
         }
         return [...pool];
       }
@@ -1453,10 +1565,14 @@
         return [...grouped.values()]
           .map(({ place, area, categories }) => {
             const categoryKeys = [...categories].sort((a, b) => a.localeCompare(b));
+            const active = categoryKeys.every((category) =>
+              isPlaceActive(area, category, place)
+            );
             return {
               place,
               area,
               categoryKeys,
+              active,
               category: categoryKeys.map(formatLabel).join(", "),
             };
           })
@@ -1473,6 +1589,7 @@
           if (index !== -1) {
             places.splice(index, 1);
           }
+          clearPlaceActive(area, category, place);
         }
 
         try {
@@ -1505,24 +1622,30 @@
         }
       }
 
-      function openViewRowMenu(menuButton, area, place, categoryKeys) {
+      function openViewRowMenu(menuButton, area, place, categoryKeys, active) {
         if (!viewRowMenu || !viewRowDelete) {
           return;
         }
         activeMenuButton = menuButton;
         menuButton.setAttribute("aria-expanded", "true");
 
-        for (const menuAction of [viewRowEdit, viewRowDelete]) {
+        const menuActions = [viewRowToggleActive, viewRowEdit, viewRowDelete].filter(Boolean);
+        for (const menuAction of menuActions) {
           menuAction.dataset.area = area;
           menuAction.dataset.place = place;
           menuAction.dataset.categories = JSON.stringify(categoryKeys);
+          menuAction.dataset.active = active ? "1" : "0";
+        }
+
+        if (viewRowToggleActive) {
+          viewRowToggleActive.textContent = active ? "Mark inactive" : "Mark active";
         }
 
         viewRowMenu.classList.add("is-open");
 
         const rect = menuButton.getBoundingClientRect();
         const panelWidth = viewRowMenu.offsetWidth || 104;
-        const panelHeight = viewRowMenu.offsetHeight || 88;
+        const panelHeight = viewRowMenu.offsetHeight || 120;
         const menuGap = 8;
         const viewportPad = 8;
         let top = rect.top + rect.height / 2 - panelHeight / 2;
@@ -1535,7 +1658,7 @@
         viewRowMenu.style.left = `${left}px`;
       }
 
-      function createRowMenuButton(place, area, categoryKeys) {
+      function createRowMenuButton(place, area, categoryKeys, active) {
         const menu = document.createElement("div");
         menu.className = "view-row-menu";
 
@@ -1552,7 +1675,7 @@
           const isOpen = activeMenuButton === menuButton && viewRowMenu.classList.contains("is-open");
           closeViewRowMenus();
           if (!isOpen) {
-            openViewRowMenu(menuButton, area, place, categoryKeys);
+            openViewRowMenu(menuButton, area, place, categoryKeys, active);
           }
         });
 
@@ -1605,7 +1728,7 @@
         if (rows.length === 0) {
           const row = document.createElement("tr");
           const cell = document.createElement("td");
-          cell.colSpan = 4;
+          cell.colSpan = 5;
           cell.className = "view-empty";
           cell.textContent = hasFilters
             ? "No places match these filters."
@@ -1615,8 +1738,13 @@
           return;
         }
 
-        for (const { place, category, area, categoryKeys } of rows) {
+        for (const { place, category, area, categoryKeys, active } of rows) {
           const row = document.createElement("tr");
+
+          const statusCell = document.createElement("td");
+          statusCell.className = "status-cell";
+          statusCell.appendChild(createStatusIndicator(active));
+          row.appendChild(statusCell);
 
           const placeCell = document.createElement("td");
           placeCell.textContent = place;
@@ -1632,11 +1760,29 @@
 
           const actionsCell = document.createElement("td");
           actionsCell.className = "view-row-actions";
-          actionsCell.appendChild(createRowMenuButton(place, area, categoryKeys));
+          actionsCell.appendChild(createRowMenuButton(place, area, categoryKeys, active));
           row.appendChild(actionsCell);
 
           tbody.appendChild(row);
         }
+      }
+
+      async function setRowActive(area, place, categoryKeys, active) {
+        try {
+          await persistSetActive(area, place, categoryKeys, active);
+        } catch (error) {
+          showError("Could not update status.");
+          console.error(error);
+          try {
+            namesByArea = await loadData();
+            populateMainDropdowns();
+            renderViewTable();
+          } catch {
+            /* keep local state */
+          }
+          return;
+        }
+        renderViewTable();
       }
 
       function openViewDialog() {
@@ -1723,6 +1869,21 @@
         closeViewRowMenus();
       });
 
+      viewRowToggleActive?.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        if (!viewRowToggleActive.dataset.categories) {
+          return;
+        }
+        const nextActive = viewRowToggleActive.dataset.active !== "1";
+        await setRowActive(
+          viewRowToggleActive.dataset.area,
+          viewRowToggleActive.dataset.place,
+          JSON.parse(viewRowToggleActive.dataset.categories),
+          nextActive
+        );
+        closeViewRowMenus();
+      });
+
       viewRowDelete?.addEventListener("click", async (event) => {
         event.stopPropagation();
         if (!viewRowDelete.dataset.categories) {
@@ -1761,7 +1922,15 @@
         const names = getPickPool(area, category);
 
         if (names.length === 0) {
-          document.getElementById("result").textContent = "No places yet";
+          const areaPlaces = namesByArea[area]?.[category] ?? [];
+          const everywherePlaces = namesByArea[EVERYWHERE_AREA]?.[category] ?? [];
+          const hasAnyPlaces =
+            area === EVERYWHERE_AREA
+              ? everywherePlaces.length > 0
+              : areaPlaces.length > 0 || everywherePlaces.length > 0;
+          document.getElementById("result").textContent = hasAnyPlaces
+            ? "No active places"
+            : "No places yet";
           return;
         }
 
