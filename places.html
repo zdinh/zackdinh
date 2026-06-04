@@ -31,10 +31,15 @@
         color: #1a1a1a;
       }
 
+      #app-content,
+      .auth-gate {
+        width: min(100%, 20rem);
+      }
+
       main {
         text-align: center;
         padding: 2rem;
-        width: min(100%, 20rem);
+        width: 100%;
       }
 
       .page-title {
@@ -478,9 +483,65 @@
       .view-dialog-close:hover {
         background: #e8e4db;
       }
+
+      .auth-gate {
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .auth-denied {
+        margin: 1rem 0 0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #8b1e1e;
+      }
+
+      .auth-denied[hidden] {
+        display: none !important;
+      }
+
+      .auth-denied[hidden] {
+        display: none !important;
+      }
+
+      #auth-sign-in {
+        width: 100%;
+      }
+
+      .sign-out-btn {
+        align-self: center;
+        display: inline-block;
+        height: auto;
+        min-height: 0;
+        margin: 0;
+        padding: 0.25rem 0;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.4;
+        background: none;
+        border: none;
+        border-radius: 0;
+        color: #555;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .sign-out-btn:hover {
+        background: none;
+        color: #1a1a1a;
+      }
     </style>
   </head>
   <body>
+    <div id="auth-gate" class="auth-gate">
+      <h1 class="page-title">Places</h1>
+      <button type="button" id="auth-sign-in">Sign in with Google</button>
+      <p id="auth-denied" class="auth-denied" hidden>
+        Access Denied
+      </p>
+    </div>
+
+    <div id="app-content" hidden>
     <main>
       <h1 class="page-title">Places</h1>
       <div class="controls">
@@ -493,6 +554,9 @@
           </button>
           <button type="button" id="view-all" class="view-btn">view all</button>
         </div>
+        <button type="button" id="auth-sign-out" class="sign-out-btn" hidden>
+          Sign out
+        </button>
       </div>
       <p id="result" aria-live="polite"></p>
     </main>
@@ -592,6 +656,8 @@
       </div>
     </dialog>
 
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="supabase-config.js"></script>
     <script>
@@ -599,12 +665,223 @@
       const EVERYWHERE_AREA = "Everywhere";
       const LEGACY_EVERYWHERE_CATEGORY = "everywhere";
       const supabaseConfig = window.PLACES_SUPABASE;
-      const supabaseClient =
+      const ALLOWED_EMAILS = (() => {
+        if (Array.isArray(supabaseConfig?.allowedEmails) && supabaseConfig.allowedEmails.length) {
+          return supabaseConfig.allowedEmails.map((email) => email.trim().toLowerCase()).filter(Boolean);
+        }
+        if (supabaseConfig?.allowedEmail) {
+          return [supabaseConfig.allowedEmail.trim().toLowerCase()];
+        }
+        return ["zack.dinh@gmail.com", "abbyherold@gmail.com"];
+      })();
+      const authRequired = Boolean(
         supabaseConfig?.url &&
-        supabaseConfig?.anonKey &&
-        supabaseConfig.anonKey !== "YOUR_ANON_KEY_FROM_SUPABASE_DASHBOARD"
-          ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey)
-          : null;
+          supabaseConfig?.anonKey &&
+          supabaseConfig.anonKey !== "YOUR_ANON_KEY_FROM_SUPABASE_DASHBOARD"
+      );
+      const supabaseClient = authRequired
+        ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey, {
+            auth: {
+              persistSession: true,
+              detectSessionInUrl: true,
+              flowType: "pkce",
+            },
+          })
+        : null;
+
+      const authGate = document.getElementById("auth-gate");
+      const appContent = document.getElementById("app-content");
+      const authDenied = document.getElementById("auth-denied");
+      const authSignIn = document.getElementById("auth-sign-in");
+      const authSignOut = document.getElementById("auth-sign-out");
+      const AUTH_ATTEMPT_KEY = "places-auth-attempt";
+      let signingOut = false;
+      let accessDenied = false;
+      let accessDeniedTimer = null;
+
+      function isOAuthCallback() {
+        return new URLSearchParams(window.location.search).has("code");
+      }
+
+      if (!isOAuthCallback()) {
+        sessionStorage.removeItem(AUTH_ATTEMPT_KEY);
+      }
+
+      authDenied.hidden = true;
+
+      function clearAccessDeniedTimer() {
+        if (accessDeniedTimer) {
+          clearTimeout(accessDeniedTimer);
+          accessDeniedTimer = null;
+        }
+      }
+
+      function showAccessDeniedMessage() {
+        clearAccessDeniedTimer();
+        accessDenied = true;
+        authDenied.textContent = "Access Denied";
+        authDenied.hidden = false;
+        accessDeniedTimer = setTimeout(() => {
+          accessDenied = false;
+          authDenied.hidden = true;
+          accessDeniedTimer = null;
+        }, 3000);
+      }
+
+      function clearAuthAttempt() {
+        sessionStorage.removeItem(AUTH_ATTEMPT_KEY);
+      }
+
+      function hasAuthAttempt() {
+        return sessionStorage.getItem(AUTH_ATTEMPT_KEY) === "1";
+      }
+
+      function shouldShowAccessDenied(event) {
+        return hasAuthAttempt() && (event === "SIGNED_IN" || isOAuthCallback());
+      }
+
+      function cleanOAuthUrl() {
+        if (!isOAuthCallback()) {
+          return;
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      function rejectUnauthorizedSession(session, { showDenied = false } = {}) {
+        if (showDenied) {
+          showAuthGate({ denied: true });
+        } else {
+          clearAccessDeniedTimer();
+          accessDenied = false;
+          authDenied.hidden = true;
+          showAuthGate();
+        }
+        return supabaseClient.auth.signOut({ scope: "local" }).then(() => {
+          cleanOAuthUrl();
+          clearAuthAttempt();
+        });
+      }
+
+      function getSessionEmail(user) {
+        return (user?.email || user?.user_metadata?.email || "").trim().toLowerCase();
+      }
+
+      function isAllowedEmail(userOrEmail) {
+        const email =
+          typeof userOrEmail === "string"
+            ? userOrEmail.trim().toLowerCase()
+            : getSessionEmail(userOrEmail);
+        return ALLOWED_EMAILS.includes(email);
+      }
+
+      function showAuthGate({ denied = false } = {}) {
+        if (denied) {
+          showAccessDeniedMessage();
+        } else if (!accessDenied) {
+          authDenied.hidden = true;
+        }
+        authGate.hidden = false;
+        appContent.hidden = true;
+        if (authSignOut) {
+          authSignOut.hidden = true;
+        }
+      }
+
+      function showApp() {
+        clearAccessDeniedTimer();
+        clearAuthAttempt();
+        accessDenied = false;
+        authDenied.hidden = true;
+        authGate.hidden = true;
+        appContent.hidden = false;
+        if (authSignOut) {
+          authSignOut.hidden = false;
+        }
+      }
+
+      async function onAuthenticated() {
+        cleanOAuthUrl();
+        showApp();
+        await bootstrapAppData();
+      }
+
+      function isLocalDevHost() {
+        const host = window.location.hostname;
+        return host === "localhost" || host === "127.0.0.1";
+      }
+
+      function getOAuthRedirectUrl() {
+        if (window.location.protocol === "file:") {
+          return null;
+        }
+
+        const configured = supabaseConfig?.localRedirectUrl?.trim();
+        if (configured && isLocalDevHost()) {
+          return configured.split("#")[0].split("?")[0];
+        }
+
+        return `${window.location.origin}${window.location.pathname}`
+          .split("#")[0]
+          .split("?")[0];
+      }
+
+      async function signInWithGoogle() {
+        if (!supabaseClient) {
+          return;
+        }
+        accessDenied = false;
+        clearAccessDeniedTimer();
+        authDenied.hidden = true;
+        const redirectTo = getOAuthRedirectUrl();
+        if (!redirectTo) {
+          authDenied.textContent =
+            "Open places.html via a local server (for example http://127.0.0.1:5500/places.html), not as a file.";
+          authDenied.hidden = false;
+          return;
+        }
+        sessionStorage.setItem(AUTH_ATTEMPT_KEY, "1");
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo,
+            queryParams: { prompt: "select_account" },
+          },
+        });
+        if (error) {
+          console.error(error);
+          clearAuthAttempt();
+          authDenied.textContent = "Could not start Google sign-in.";
+          authDenied.hidden = false;
+        }
+      }
+
+      async function signOut(event) {
+        event?.preventDefault();
+        event?.stopPropagation();
+        if (!supabaseClient) {
+          showAuthGate();
+          return;
+        }
+
+        signingOut = true;
+        clearAuthAttempt();
+        resetAppData();
+        showAuthGate();
+
+        try {
+          const { error } = await supabaseClient.auth.signOut({ scope: "local" });
+          if (error) {
+            console.error(error);
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          signingOut = false;
+        }
+      }
+
+      authSignIn?.addEventListener("click", signInWithGoogle);
+      authSignOut?.addEventListener("click", signOut);
 
       const seedData = {
         Everywhere: {},
@@ -633,6 +910,27 @@
       const viewFilterCategory = document.getElementById("view-filter-category");
       let activeMenuButton = null;
       let namesByArea;
+      let bootstrapPromise = null;
+
+      async function bootstrapAppData() {
+        if (!bootstrapPromise) {
+          bootstrapPromise = (async () => {
+            namesByArea = await loadData();
+            populateMainDropdowns();
+          })().catch((error) => {
+            bootstrapPromise = null;
+            console.error(error);
+            namesByArea = loadLocalData();
+            populateMainDropdowns();
+          });
+        }
+        return bootstrapPromise;
+      }
+
+      function resetAppData() {
+        bootstrapPromise = null;
+        namesByArea = undefined;
+      }
 
       const areaSelect = document.getElementById("area");
       const categorySelect = document.getElementById("category");
@@ -723,7 +1021,8 @@
           .select("name, area, category");
 
         if (error) {
-          throw error;
+          console.error("Supabase read failed:", error);
+          return loadLocalData();
         }
 
         if (data && data.length > 0) {
@@ -743,9 +1042,8 @@
             onConflict: "name,area,category",
           });
           if (insertError) {
-            throw insertError;
-          }
-          if (hasLocalPlaces) {
+            console.error("Supabase seed upsert failed:", insertError);
+          } else if (hasLocalPlaces) {
             localStorage.removeItem(STORAGE_KEY);
           }
         }
@@ -1526,18 +1824,62 @@
         closeAddDialog();
       });
 
-      async function init() {
-        try {
-          namesByArea = await loadData();
-        } catch (error) {
-          console.error(error);
-          showError("Could not load places.");
-          namesByArea = loadLocalData();
+      async function startPlacesApp() {
+        if (!authRequired || !supabaseClient) {
+          showApp();
+          await bootstrapAppData();
+          return;
         }
-        populateMainDropdowns();
+
+        const {
+          data: { session },
+        } = await supabaseClient.auth.getSession();
+
+        if (session && isAllowedEmail(session.user)) {
+          await onAuthenticated();
+          return;
+        }
+
+        if (session) {
+          await rejectUnauthorizedSession(session, { showDenied: false });
+          return;
+        }
+
+        clearAuthAttempt();
+        cleanOAuthUrl();
+        clearAccessDeniedTimer();
+        accessDenied = false;
+        authDenied.hidden = true;
+        showAuthGate();
+
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+          if (event === "INITIAL_SESSION") {
+            return;
+          }
+
+          if (event === "SIGNED_OUT" || !session) {
+            resetAppData();
+            showAuthGate();
+            return;
+          }
+
+          if (signingOut) {
+            return;
+          }
+
+          if (!isAllowedEmail(session.user)) {
+            await rejectUnauthorizedSession(session, {
+              showDenied: shouldShowAccessDenied(event),
+            });
+            return;
+          }
+
+          resetAppData();
+          await onAuthenticated();
+        });
       }
 
-      init();
+      startPlacesApp();
     </script>
   </body>
 </html>

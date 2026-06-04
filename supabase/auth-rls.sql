@@ -1,18 +1,5 @@
--- Run this if reads work but adds/deletes fail with error 42501.
--- Supabase dashboard: SQL Editor → New query → paste → Run
---
--- For Google sign-in protection, use supabase/auth-rls.sql instead.
-
-revoke all on public.places from anon;
-
-drop policy if exists "Allow public read" on public.places;
-drop policy if exists "Allow public insert" on public.places;
-drop policy if exists "Allow public update" on public.places;
-drop policy if exists "Allow public delete" on public.places;
-drop policy if exists "Allowed user read" on public.places;
-drop policy if exists "Allowed user insert" on public.places;
-drop policy if exists "Allowed user update" on public.places;
-drop policy if exists "Allowed user delete" on public.places;
+-- Fix table permissions + RLS for authenticated Google sign-in.
+-- Run in Supabase dashboard: SQL Editor → New query → paste → Run
 
 create or replace function public.places_is_allowed_user()
 returns boolean
@@ -31,6 +18,19 @@ as $$
       )
   );
 $$;
+
+revoke all on public.places from anon;
+
+drop policy if exists "Allow public read" on public.places;
+drop policy if exists "Allow public insert" on public.places;
+drop policy if exists "Allow public update" on public.places;
+drop policy if exists "Allow public delete" on public.places;
+drop policy if exists "Allowed user read" on public.places;
+drop policy if exists "Allowed user insert" on public.places;
+drop policy if exists "Allowed user update" on public.places;
+drop policy if exists "Allowed user delete" on public.places;
+
+alter table public.places enable row level security;
 
 create policy "Allowed user read"
   on public.places
