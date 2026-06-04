@@ -921,6 +921,15 @@
         addStepLabel.textContent = addStepTitles[step];
       }
 
+      function getAddStep() {
+        for (const [key, panel] of Object.entries(addSteps)) {
+          if (!panel.hidden) {
+            return key;
+          }
+        }
+        return "name";
+      }
+
       function precheckAddCheckbox(container, value) {
         if (typeof CSS !== "undefined" && CSS.escape) {
           const input = container.querySelector(`input[value="${CSS.escape(value)}"]`);
@@ -953,7 +962,11 @@
         }
 
         populateAddAreaCheckboxes();
-        precheckAddCheckbox(addAreaList, areaSelect.value);
+        const areasToPrecheck =
+          addWizard.areas.length > 0 ? addWizard.areas : [areaSelect.value];
+        for (const area of areasToPrecheck) {
+          precheckAddCheckbox(addAreaList, area);
+        }
         showAddStep("area");
         addAreaNew.focus();
       }
@@ -1254,10 +1267,30 @@
         document.getElementById("result").textContent = names[index];
       });
 
+      addForm.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" || event.target.closest("button")) {
+          return;
+        }
+
+        const step = getAddStep();
+        if (step === "name") {
+          event.preventDefault();
+          goToAreaStep();
+        } else if (step === "area") {
+          event.preventDefault();
+          goToCategoryStep();
+        }
+      });
+
       addForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
+        if (getAddStep() !== "category") {
+          return;
+        }
+
         const placeName = addPlaceInput.value.trim();
+        const areaNames = resolveAreasForAdd();
         const categoryNames = resolveCategoriesForAdd();
 
         if (!placeName) {
@@ -1265,12 +1298,17 @@
           addPlaceInput.focus();
           return;
         }
+        if (areaNames.length === 0) {
+          showAddStep("area");
+          addAreaNew.focus();
+          return;
+        }
         if (categoryNames.length === 0) {
           addCategoryNew.focus();
           return;
         }
 
-        await addPlaces(addWizard.areas, categoryNames, placeName);
+        await addPlaces(areaNames, categoryNames, placeName);
         closeAddDialog();
       });
 
