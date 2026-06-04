@@ -39,24 +39,30 @@
         font-weight: 800;
       }
 
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+      }
+
+      .actions-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
       .add-btn {
         width: 2.5rem;
         height: 2.5rem;
         padding: 0;
-        margin: 0 auto 1rem;
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
         line-height: 1;
         border-radius: 50%;
-      }
-
-      .controls {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
       }
 
       select,
@@ -231,6 +237,10 @@
       }
 
       .view-btn {
+        flex: 1;
+        min-width: 0;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
         background: transparent;
         color: #1a1a1a;
         border: 2px solid #1a1a1a;
@@ -266,12 +276,27 @@
         text-align: center;
       }
 
+      .view-filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .view-filters select {
+        min-width: 0;
+      }
+
       .view-table-wrap {
-        max-height: min(24rem, 60vh);
-        overflow: auto;
         border: 2px solid #1a1a1a;
         border-radius: 0.75rem;
+        overflow: hidden;
         background: #fff;
+      }
+
+      .view-table-scroll {
+        max-height: min(24rem, 60vh);
+        overflow: auto;
       }
 
       .view-table {
@@ -378,7 +403,7 @@
         display: block;
       }
 
-      .view-row-menu-panel .view-row-delete {
+      .view-row-menu-panel .view-row-menu-action {
         display: block;
         width: 100%;
         padding: 0.625rem 0.875rem;
@@ -393,9 +418,13 @@
         cursor: pointer;
       }
 
-      .view-row-menu-panel .view-row-delete:hover {
+      .view-row-menu-panel .view-row-menu-action:hover {
         background: #f5f2eb;
         color: #1a1a1a;
+      }
+
+      .view-row-menu-panel .view-row-menu-action + .view-row-menu-action {
+        border-top: 1px solid #e0dcd3;
       }
 
       .view-table th {
@@ -432,14 +461,16 @@
   <body>
     <main>
       <h1 class="page-title">Places</h1>
-      <button type="button" id="add-open" class="add-btn" aria-label="Add place">
-        +
-      </button>
       <div class="controls">
         <select id="area" aria-label="Area"></select>
         <select id="category" aria-label="Category"></select>
         <button type="button" id="pick">Select</button>
-        <button type="button" id="view-all" class="view-btn">View all</button>
+        <div class="actions-row">
+          <button type="button" id="add-open" class="add-btn" aria-label="Add place">
+            +
+          </button>
+          <button type="button" id="view-all" class="view-btn">view all</button>
+        </div>
       </div>
       <p id="result" aria-live="polite"></p>
     </main>
@@ -503,7 +534,7 @@
             <button type="button" class="add-dialog-back" data-back="area">
               Back
             </button>
-            <button type="submit">Add</button>
+            <button type="submit" id="add-submit">Add</button>
           </div>
         </section>
       </form>
@@ -512,22 +543,29 @@
     <dialog class="view-dialog" id="view-dialog" aria-labelledby="view-dialog-title">
       <div class="view-dialog-inner">
         <h2 id="view-dialog-title">All places</h2>
+        <div class="view-filters">
+          <select id="view-filter-area" aria-label="Filter by area"></select>
+          <select id="view-filter-category" aria-label="Filter by category"></select>
+        </div>
         <div class="view-table-wrap">
-          <table class="view-table">
-            <thead>
-              <tr>
-                <th scope="col">Place</th>
-                <th scope="col">Category</th>
-                <th scope="col">Area</th>
-                <th scope="col" class="view-row-actions-head"><span class="hidden">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody id="view-table-body"></tbody>
-          </table>
+          <div class="view-table-scroll">
+            <table class="view-table">
+              <thead>
+                <tr>
+                  <th scope="col">Place</th>
+                  <th scope="col" aria-label="Category"></th>
+                  <th scope="col" aria-label="Area"></th>
+                  <th scope="col" class="view-row-actions-head"><span class="hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="view-table-body"></tbody>
+            </table>
+          </div>
         </div>
         <button type="button" class="view-dialog-close" id="view-close">Close</button>
         <div id="view-row-menu" class="view-row-menu-panel">
-          <button type="button" class="view-row-delete" id="view-row-delete">Delete</button>
+          <button type="button" class="view-row-menu-action" id="view-row-edit">Edit</button>
+          <button type="button" class="view-row-menu-action" id="view-row-delete">Delete</button>
         </div>
       </div>
     </dialog>
@@ -564,7 +602,13 @@
       };
 
       const viewRowMenu = document.getElementById("view-row-menu");
+      const viewRowEdit = document.getElementById("view-row-edit");
       const viewRowDelete = document.getElementById("view-row-delete");
+      const addDialogTitle = document.getElementById("add-dialog-title");
+      const addSubmitBtn = document.getElementById("add-submit");
+      let editPlace = null;
+      const viewFilterArea = document.getElementById("view-filter-area");
+      const viewFilterCategory = document.getElementById("view-filter-category");
       let activeMenuButton = null;
       let namesByArea;
 
@@ -718,6 +762,22 @@
           .eq("name", place)
           .eq("area", area)
           .in("category", categoryKeys);
+
+        if (error) {
+          throw error;
+        }
+      }
+
+      async function persistDeleteAllInArea(area, place) {
+        if (!supabaseClient) {
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from("places")
+          .delete()
+          .eq("name", place)
+          .eq("area", area);
 
         if (error) {
           throw error;
@@ -944,10 +1004,29 @@
         }
       }
 
+      function setAddDialogMode(mode) {
+        const isEdit = mode === "edit";
+        addDialogTitle.textContent = isEdit ? "Edit place" : "Add place";
+        addSubmitBtn.textContent = isEdit ? "Save" : "Add";
+      }
+
       function openAddDialog() {
+        editPlace = null;
         addForm.reset();
         addWizard.areas = [];
         addWizard.categories = [];
+        setAddDialogMode("add");
+        showAddStep("name");
+        addDialog.showModal();
+        addPlaceInput.focus();
+      }
+
+      function openEditDialog(place, area, categoryKeys) {
+        editPlace = { place, area, categoryKeys: [...categoryKeys] };
+        addForm.reset();
+        addWizard.areas = [area];
+        addPlaceInput.value = place;
+        setAddDialogMode("edit");
         showAddStep("name");
         addDialog.showModal();
         addPlaceInput.focus();
@@ -979,13 +1058,33 @@
 
         addWizard.areas = areaNames;
         populateAddCategoryCheckboxes();
-        precheckAddCheckbox(addCategoryList, categorySelect.value);
+        const categoriesToPrecheck = editPlace?.categoryKeys ?? [categorySelect.value];
+        for (const category of categoriesToPrecheck) {
+          if (category) {
+            precheckAddCheckbox(addCategoryList, category);
+          }
+        }
         showAddStep("category");
         addCategoryNew.focus();
       }
 
       function closeAddDialog() {
+        editPlace = null;
+        setAddDialogMode("add");
         addDialog.close();
+      }
+
+      function removePlaceFromArea(placeName, areaName) {
+        for (const category of getAllCategories()) {
+          const places = namesByArea[areaName]?.[category];
+          if (!places) {
+            continue;
+          }
+          const index = places.indexOf(placeName);
+          if (index !== -1) {
+            places.splice(index, 1);
+          }
+        }
       }
 
       function addPlaceToData(areaName, categoryName, placeName) {
@@ -1093,15 +1192,17 @@
         activeMenuButton = menuButton;
         menuButton.setAttribute("aria-expanded", "true");
 
-        viewRowDelete.dataset.area = area;
-        viewRowDelete.dataset.place = place;
-        viewRowDelete.dataset.categories = JSON.stringify(categoryKeys);
+        for (const menuAction of [viewRowEdit, viewRowDelete]) {
+          menuAction.dataset.area = area;
+          menuAction.dataset.place = place;
+          menuAction.dataset.categories = JSON.stringify(categoryKeys);
+        }
 
         viewRowMenu.classList.add("is-open");
 
         const rect = menuButton.getBoundingClientRect();
         const panelWidth = viewRowMenu.offsetWidth || 104;
-        const panelHeight = viewRowMenu.offsetHeight || 44;
+        const panelHeight = viewRowMenu.offsetHeight || 88;
         const menuGap = 8;
         const viewportPad = 8;
         let top = rect.top + rect.height / 2 - panelHeight / 2;
@@ -1139,9 +1240,46 @@
         return menu;
       }
 
+      function populateViewFilters() {
+        const previousArea = viewFilterArea?.value ?? "";
+        const previousCategory = viewFilterCategory?.value ?? "";
+
+        fillSelect(viewFilterArea, ["", ...getAreas()], {
+          labels: { "": "All areas" },
+        });
+        fillSelect(viewFilterCategory, ["", ...getAllCategories()], {
+          labels: { "": "All categories" },
+        });
+
+        if ([...viewFilterArea.options].some((option) => option.value === previousArea)) {
+          viewFilterArea.value = previousArea;
+        }
+        if (
+          [...viewFilterCategory.options].some((option) => option.value === previousCategory)
+        ) {
+          viewFilterCategory.value = previousCategory;
+        }
+      }
+
+      function getFilteredPlaceRows() {
+        const areaFilter = viewFilterArea?.value ?? "";
+        const categoryFilter = viewFilterCategory?.value ?? "";
+
+        return getAllPlaceRows().filter((row) => {
+          if (areaFilter && row.area !== areaFilter) {
+            return false;
+          }
+          if (categoryFilter && !row.categoryKeys.includes(categoryFilter)) {
+            return false;
+          }
+          return true;
+        });
+      }
+
       function renderViewTable() {
         const tbody = document.getElementById("view-table-body");
-        const rows = getAllPlaceRows();
+        const rows = getFilteredPlaceRows();
+        const hasFilters = Boolean(viewFilterArea?.value || viewFilterCategory?.value);
         tbody.innerHTML = "";
 
         if (rows.length === 0) {
@@ -1149,7 +1287,9 @@
           const cell = document.createElement("td");
           cell.colSpan = 4;
           cell.className = "view-empty";
-          cell.textContent = "No places yet.";
+          cell.textContent = hasFilters
+            ? "No places match these filters."
+            : "No places yet.";
           row.appendChild(cell);
           tbody.appendChild(row);
           return;
@@ -1180,6 +1320,7 @@
       }
 
       function openViewDialog() {
+        populateViewFilters();
         renderViewTable();
         document.getElementById("view-dialog").showModal();
       }
@@ -1187,6 +1328,28 @@
       function closeViewDialog() {
         closeViewRowMenus();
         document.getElementById("view-dialog").close();
+      }
+
+      async function updatePlace(originalPlace, originalArea, placeName, areaNames, categoryNames) {
+        removePlaceFromArea(originalPlace, originalArea);
+
+        try {
+          await persistDeleteAllInArea(originalArea, originalPlace);
+        } catch (error) {
+          showError("Could not update place.");
+          console.error(error);
+          try {
+            namesByArea = await loadData();
+            populateMainDropdowns();
+            renderViewTable();
+          } catch {
+            /* keep local state */
+          }
+          return;
+        }
+
+        await addPlaces(areaNames, categoryNames, placeName);
+        renderViewTable();
       }
 
       async function addPlaces(areaNames, categoryNames, placeName) {
@@ -1220,6 +1383,26 @@
       document.getElementById("view-all").addEventListener("click", openViewDialog);
       document.getElementById("view-close").addEventListener("click", closeViewDialog);
 
+      for (const filterSelect of [viewFilterArea, viewFilterCategory]) {
+        filterSelect?.addEventListener("change", () => {
+          closeViewRowMenus();
+          renderViewTable();
+        });
+      }
+
+      viewRowEdit?.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (!viewRowEdit.dataset.categories) {
+          return;
+        }
+        openEditDialog(
+          viewRowEdit.dataset.place,
+          viewRowEdit.dataset.area,
+          JSON.parse(viewRowEdit.dataset.categories)
+        );
+        closeViewRowMenus();
+      });
+
       viewRowDelete?.addEventListener("click", async (event) => {
         event.stopPropagation();
         if (!viewRowDelete.dataset.categories) {
@@ -1242,7 +1425,7 @@
         }
       });
 
-      document.querySelector(".view-table-wrap")?.addEventListener("scroll", closeViewRowMenus);
+      document.querySelector(".view-table-scroll")?.addEventListener("scroll", closeViewRowMenus);
       document.getElementById("add-next-name").addEventListener("click", goToAreaStep);
       document.getElementById("add-next-area").addEventListener("click", goToCategoryStep);
 
@@ -1307,7 +1490,17 @@
           return;
         }
 
-        await addPlaces(areaNames, categoryNames, placeName);
+        if (editPlace) {
+          await updatePlace(
+            editPlace.place,
+            editPlace.area,
+            placeName,
+            areaNames,
+            categoryNames
+          );
+        } else {
+          await addPlaces(areaNames, categoryNames, placeName);
+        }
         closeAddDialog();
       });
 
