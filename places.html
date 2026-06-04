@@ -692,7 +692,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="supabase-config.js"></script>
+    <script src="supabase/supabase-config.js"></script>
     <script>
       const STORAGE_KEY = "places-data";
       const EVERYWHERE_AREA = "Everywhere";
@@ -916,23 +916,6 @@
       authSignIn?.addEventListener("click", signInWithGoogle);
       authSignOut?.addEventListener("click", signOut);
 
-      const seedData = {
-        Everywhere: {},
-        "Long Beach": {
-          coffee: ["Reinne's Place", "Steelhead", "Colossus", "Gusto"],
-          drinks: ["Vine", "Babygees", "Ballast Point", "ABYC", "The Attic"],
-          food: [
-            "Speakcheesy",
-            "Brothers Keeper",
-            "Due Fiori",
-            "Colossus",
-            "Gusto",
-            "Ballast Point",
-            "The Attic",
-          ],
-        },
-      };
-
       const viewRowMenu = document.getElementById("view-row-menu");
       const viewRowEdit = document.getElementById("view-row-edit");
       const viewRowDelete = document.getElementById("view-row-delete");
@@ -1023,8 +1006,8 @@
         category: "Category",
       };
 
-      function cloneSeed() {
-        return JSON.parse(JSON.stringify(seedData));
+      function emptyPlacesData() {
+        return { [EVERYWHERE_AREA]: {} };
       }
 
       function rowsToNamesByArea(rows) {
@@ -1077,9 +1060,9 @@
             return normalizeData(JSON.parse(stored));
           }
         } catch {
-          /* use seed */
+          /* ignore invalid cache */
         }
-        return normalizeData(cloneSeed());
+        return emptyPlacesData();
       }
 
       async function loadData() {
@@ -1111,21 +1094,20 @@
         const hasLocalPlaces = localRows.some(
           (row) => row.name && row.area && row.category
         );
-        const source = hasLocalPlaces ? local : normalizeData(cloneSeed());
-        const rows = rowsFromNamesByArea(source);
 
-        if (rows.length > 0) {
-          const { error: insertError } = await supabaseClient.from("places").upsert(rows, {
+        if (hasLocalPlaces) {
+          const { error: insertError } = await supabaseClient.from("places").upsert(localRows, {
             onConflict: "name,area,category",
           });
           if (insertError) {
-            console.error("Supabase seed upsert failed:", insertError);
-          } else if (hasLocalPlaces) {
+            console.error("Supabase migrate from local cache failed:", insertError);
+          } else {
             localStorage.removeItem(STORAGE_KEY);
           }
+          return normalizeData(local);
         }
 
-        return normalizeData(source);
+        return emptyPlacesData();
       }
 
       async function persistAdds(areaNames, categoryNames, placeName) {
@@ -1211,7 +1193,7 @@
 
       function normalizeData(data) {
         if (!data || typeof data !== "object" || Array.isArray(data)) {
-          return normalizeData(cloneSeed());
+          return emptyPlacesData();
         }
 
         const categories = new Set();
@@ -1227,7 +1209,7 @@
         }
 
         if (categories.size === 0) {
-          return normalizeData(cloneSeed());
+          return emptyPlacesData();
         }
 
         const categoryList = [...categories].sort((a, b) => a.localeCompare(b));
