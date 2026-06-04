@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Places</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Manrope", system-ui, sans-serif;
+        background: #f5f2eb;
+        color: #1a1a1a;
+      }
+
+      main {
+        text-align: center;
+        padding: 2rem;
+        width: min(100%, 20rem);
+      }
+
+      .page-title {
+        margin: 0 0 1rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+      }
+
+      .add-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        line-height: 1;
+        border-radius: 50%;
+      }
+
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+      }
+
+      select,
+      .text-input {
+        font: inherit;
+        font-weight: 500;
+        font-size: 1rem;
+        width: 100%;
+      }
+
+      select {
+        padding: 0.75rem 2rem 0.75rem 1.25rem;
+        border: 2px solid #1a1a1a;
+        border-radius: 999px;
+        background-color: #fff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%231a1a1a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M2.5 4.5 6 8 9.5 4.5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 0.65rem;
+        color: #1a1a1a;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        text-align: left;
+      }
+
+      .text-input {
+        padding: 0.75rem 1.25rem;
+        border: 2px solid #1a1a1a;
+        border-radius: 999px;
+        background: #fff;
+        color: #1a1a1a;
+      }
+
+      .text-input:focus,
+      select:focus {
+        outline: 2px solid #1a1a1a;
+        outline-offset: 2px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      button {
+        font: inherit;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 999px;
+        background: #1a1a1a;
+        color: #f5f2eb;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #333;
+      }
+
+      #result {
+        margin-top: 1.5rem;
+        min-height: 2rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .add-dialog {
+        border: none;
+        border-radius: 1rem;
+        padding: 0;
+        max-width: calc(100vw - 2rem);
+        width: 20rem;
+        background: #f5f2eb;
+        color: #1a1a1a;
+        box-shadow: 0 1rem 2rem rgb(0 0 0 / 15%);
+      }
+
+      .add-dialog::backdrop {
+        background: rgb(0 0 0 / 35%);
+      }
+
+      .add-dialog-inner {
+        padding: 1.5rem;
+        text-align: left;
+      }
+
+      .add-dialog h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.125rem;
+        text-align: center;
+      }
+
+      .add-step-label {
+        margin: 0 0 1.25rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        text-align: center;
+        color: #555;
+      }
+
+      .add-step[hidden] {
+        display: none;
+      }
+
+      .add-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        border: none;
+        padding: 0;
+        margin-inline: 0;
+      }
+
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        max-height: 7.5rem;
+        overflow-y: auto;
+        margin-bottom: 0.5rem;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .checkbox-item input {
+        width: 1rem;
+        height: 1rem;
+        margin: 0;
+        accent-color: #1a1a1a;
+        cursor: pointer;
+      }
+
+      .add-hint {
+        margin: 0;
+        font-size: 0.75rem;
+        color: #555;
+      }
+
+      .add-dialog-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+
+      .add-dialog-actions button {
+        flex: 1;
+      }
+
+      .add-dialog-cancel {
+        background: transparent;
+        color: #1a1a1a;
+        border: 2px solid #1a1a1a;
+      }
+
+      .add-dialog-cancel:hover,
+      .add-dialog-back:hover {
+        background: #e8e4db;
+      }
+
+      .add-dialog-back {
+        background: transparent;
+        color: #1a1a1a;
+        border: 2px solid #1a1a1a;
+      }
+
+      .view-btn {
+        background: transparent;
+        color: #1a1a1a;
+        border: 2px solid #1a1a1a;
+      }
+
+      .view-btn:hover {
+        background: #e8e4db;
+      }
+
+      .view-dialog {
+        border: none;
+        border-radius: 1rem;
+        padding: 0;
+        max-width: calc(100vw - 2rem);
+        width: min(36rem, calc(100vw - 2rem));
+        background: #f5f2eb;
+        color: #1a1a1a;
+        box-shadow: 0 1rem 2rem rgb(0 0 0 / 15%);
+      }
+
+      .view-dialog::backdrop {
+        background: rgb(0 0 0 / 35%);
+      }
+
+      .view-dialog-inner {
+        padding: 1.5rem;
+        text-align: left;
+      }
+
+      .view-dialog h2 {
+        margin: 0 0 1rem;
+        font-size: 1.125rem;
+        text-align: center;
+      }
+
+      .view-table-wrap {
+        max-height: min(24rem, 60vh);
+        overflow: auto;
+        border: 2px solid #1a1a1a;
+        border-radius: 0.75rem;
+        background: #fff;
+      }
+
+      .view-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+
+      .view-table th:nth-child(1),
+      .view-table td:nth-child(1) {
+        width: 34%;
+      }
+
+      .view-table th:nth-child(2),
+      .view-table td:nth-child(2) {
+        width: 34%;
+      }
+
+      .view-table th:nth-child(3),
+      .view-table td:nth-child(3) {
+        width: 22%;
+      }
+
+      .view-table th:nth-child(4),
+      .view-table td:nth-child(4) {
+        width: 10%;
+      }
+
+      .view-table td:not(.view-row-actions),
+      .view-table th:not(.view-row-actions-head) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .view-table th,
+      .view-table td {
+        padding: 0.625rem 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #e0dcd3;
+        vertical-align: middle;
+      }
+
+      .view-table th.view-row-actions-head,
+      .view-table td.view-row-actions {
+        width: 3rem;
+        padding: 0.375rem;
+        text-align: center;
+        position: sticky;
+        right: 0;
+        background: #fff;
+        z-index: 2;
+        box-shadow: -6px 0 8px rgb(0 0 0 / 4%);
+      }
+
+      .view-table th.view-row-actions-head {
+        background: #f5f2eb;
+        z-index: 3;
+      }
+
+      .view-row-menu {
+        position: relative;
+        display: inline-flex;
+        justify-content: center;
+      }
+
+      .view-row-menu-btn {
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border: none;
+        border-radius: 0.375rem;
+        background: transparent;
+        color: #1a1a1a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .view-row-menu-btn:hover,
+      .view-row-menu-btn[aria-expanded="true"] {
+        background: #f5f2eb;
+      }
+
+      .view-row-menu-btn svg {
+        display: block;
+      }
+
+      .view-row-menu-panel {
+        display: none;
+        position: fixed;
+        min-width: 6.5rem;
+        background: #fff;
+        border: 2px solid #1a1a1a;
+        border-radius: 0.625rem;
+        overflow: hidden;
+        z-index: 10000;
+        box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%);
+      }
+
+      .view-row-menu-panel.is-open {
+        display: block;
+      }
+
+      .view-row-menu-panel .view-row-delete {
+        display: block;
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: none;
+        border-radius: 0;
+        background: #fff;
+        color: #1a1a1a;
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .view-row-menu-panel .view-row-delete:hover {
+        background: #f5f2eb;
+        color: #1a1a1a;
+      }
+
+      .view-table th {
+        position: sticky;
+        top: 0;
+        background: #f5f2eb;
+        font-weight: 700;
+      }
+
+      .view-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .view-empty {
+        margin: 0;
+        padding: 1rem 0.75rem;
+        font-size: 0.875rem;
+        color: #555;
+      }
+
+      .view-dialog-close {
+        width: 100%;
+        margin-top: 1rem;
+        background: transparent;
+        color: #1a1a1a;
+        border: 2px solid #1a1a1a;
+      }
+
+      .view-dialog-close:hover {
+        background: #e8e4db;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 class="page-title">Places</h1>
+      <button type="button" id="add-open" class="add-btn" aria-label="Add place">
+        +
+      </button>
+      <div class="controls">
+        <select id="area" aria-label="Area"></select>
+        <select id="category" aria-label="Category"></select>
+        <button type="button" id="pick">Select</button>
+        <button type="button" id="view-all" class="view-btn">View all</button>
+      </div>
+      <p id="result" aria-live="polite"></p>
+    </main>
+
+    <dialog class="add-dialog" id="add-dialog" aria-labelledby="add-dialog-title">
+      <form class="add-dialog-inner" id="add-form">
+        <h2 id="add-dialog-title">Add place</h2>
+        <p class="add-step-label" id="add-step-label">Place name</p>
+
+        <section class="add-step" id="add-step-name" data-step="name" aria-labelledby="add-step-label">
+          <div class="add-field">
+            <input
+              class="text-input"
+              type="text"
+              id="add-place"
+              placeholder="Place name"
+              autocomplete="off"
+            />
+          </div>
+          <div class="add-dialog-actions">
+            <button type="button" class="add-dialog-cancel" id="add-cancel">
+              Cancel
+            </button>
+            <button type="button" id="add-next-name">Next</button>
+          </div>
+        </section>
+
+        <section class="add-step" id="add-step-area" data-step="area" hidden aria-labelledby="add-step-label">
+          <div class="add-field">
+            <div id="add-area-list" class="checkbox-group"></div>
+            <input
+              class="text-input"
+              type="text"
+              id="add-area-new"
+              placeholder="New areas (comma-separated)"
+              autocomplete="off"
+            />
+            <p class="add-hint">Check one or more, or type new areas above.</p>
+          </div>
+          <div class="add-dialog-actions">
+            <button type="button" class="add-dialog-back" data-back="name">
+              Back
+            </button>
+            <button type="button" id="add-next-area">Next</button>
+          </div>
+        </section>
+
+        <section class="add-step" id="add-step-category" data-step="category" hidden aria-labelledby="add-step-label">
+          <div class="add-field">
+            <div id="add-category-list" class="checkbox-group"></div>
+            <input
+              class="text-input"
+              type="text"
+              id="add-category-new"
+              placeholder="New categories (comma-separated)"
+              autocomplete="off"
+            />
+            <p class="add-hint">Check one or more, or type new categories above.</p>
+          </div>
+          <div class="add-dialog-actions">
+            <button type="button" class="add-dialog-back" data-back="area">
+              Back
+            </button>
+            <button type="submit">Add</button>
+          </div>
+        </section>
+      </form>
+    </dialog>
+
+    <dialog class="view-dialog" id="view-dialog" aria-labelledby="view-dialog-title">
+      <div class="view-dialog-inner">
+        <h2 id="view-dialog-title">All places</h2>
+        <div class="view-table-wrap">
+          <table class="view-table">
+            <thead>
+              <tr>
+                <th scope="col">Place</th>
+                <th scope="col">Category</th>
+                <th scope="col">Area</th>
+                <th scope="col" class="view-row-actions-head"><span class="hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="view-table-body"></tbody>
+          </table>
+        </div>
+        <button type="button" class="view-dialog-close" id="view-close">Close</button>
+        <div id="view-row-menu" class="view-row-menu-panel">
+          <button type="button" class="view-row-delete" id="view-row-delete">Delete</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script>
+      const STORAGE_KEY = "places-data";
+      const EVERYWHERE_AREA = "Everywhere";
+      const LEGACY_EVERYWHERE_CATEGORY = "everywhere";
+      const supabaseConfig = window.PLACES_SUPABASE;
+      const supabaseClient =
+        supabaseConfig?.url &&
+        supabaseConfig?.anonKey &&
+        supabaseConfig.anonKey !== "YOUR_ANON_KEY_FROM_SUPABASE_DASHBOARD"
+          ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey)
+          : null;
+
+      const seedData = {
+        Everywhere: {},
+        "Long Beach": {
+          coffee: ["Reinne's Place", "Steelhead", "Colossus", "Gusto"],
+          drinks: ["Vine", "Babygees", "Ballast Point", "ABYC", "The Attic"],
+          food: [
+            "Speakcheesy",
+            "Brothers Keeper",
+            "Due Fiori",
+            "Colossus",
+            "Gusto",
+            "Ballast Point",
+            "The Attic",
+          ],
+        },
+      };
+
+      const viewRowMenu = document.getElementById("view-row-menu");
+      const viewRowDelete = document.getElementById("view-row-delete");
+      let activeMenuButton = null;
+      let namesByArea;
+
+      const areaSelect = document.getElementById("area");
+      const categorySelect = document.getElementById("category");
+      const addDialog = document.getElementById("add-dialog");
+      const addForm = document.getElementById("add-form");
+      const addAreaList = document.getElementById("add-area-list");
+      const addCategoryList = document.getElementById("add-category-list");
+      const addAreaNew = document.getElementById("add-area-new");
+      const addCategoryNew = document.getElementById("add-category-new");
+      const addPlaceInput = document.getElementById("add-place");
+      const addStepLabel = document.getElementById("add-step-label");
+      const addSteps = {
+        area: document.getElementById("add-step-area"),
+        category: document.getElementById("add-step-category"),
+        name: document.getElementById("add-step-name"),
+      };
+
+      const addWizard = {
+        areas: [],
+        categories: [],
+      };
+
+      const addStepTitles = {
+        name: "Place name",
+        area: "Area",
+        category: "Category",
+      };
+
+      function cloneSeed() {
+        return JSON.parse(JSON.stringify(seedData));
+      }
+
+      function rowsToNamesByArea(rows) {
+        const data = {};
+        for (const row of rows) {
+          if (!data[row.area]) {
+            data[row.area] = {};
+          }
+          if (!data[row.area][row.category]) {
+            data[row.area][row.category] = [];
+          }
+          if (!data[row.area][row.category].includes(row.name)) {
+            data[row.area][row.category].push(row.name);
+          }
+        }
+        return data;
+      }
+
+      function rowsFromNamesByArea(data) {
+        const rows = [];
+        for (const [area, categories] of Object.entries(data)) {
+          if (!categories || typeof categories !== "object") {
+            continue;
+          }
+          for (const [category, places] of Object.entries(categories)) {
+            if (!Array.isArray(places)) {
+              continue;
+            }
+            for (const name of places) {
+              if (name) {
+                rows.push({ name, area, category });
+              }
+            }
+          }
+        }
+        return rows;
+      }
+
+      function loadLocalData() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            return normalizeData(JSON.parse(stored));
+          }
+        } catch {
+          /* use seed */
+        }
+        return normalizeData(cloneSeed());
+      }
+
+      async function loadData() {
+        if (!supabaseClient) {
+          return loadLocalData();
+        }
+
+        const { data, error } = await supabaseClient
+          .from("places")
+          .select("name, area, category");
+
+        if (error) {
+          throw error;
+        }
+
+        if (data && data.length > 0) {
+          return normalizeData(rowsToNamesByArea(data));
+        }
+
+        const local = loadLocalData();
+        const localRows = rowsFromNamesByArea(local);
+        const hasLocalPlaces = localRows.some(
+          (row) => row.name && row.area && row.category
+        );
+        const source = hasLocalPlaces ? local : normalizeData(cloneSeed());
+        const rows = rowsFromNamesByArea(source);
+
+        if (rows.length > 0) {
+          const { error: insertError } = await supabaseClient.from("places").upsert(rows, {
+            onConflict: "name,area,category",
+          });
+          if (insertError) {
+            throw insertError;
+          }
+          if (hasLocalPlaces) {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        }
+
+        return normalizeData(source);
+      }
+
+      async function persistAdds(areaNames, categoryNames, placeName) {
+        if (!supabaseClient) {
+          return;
+        }
+
+        const rows = [];
+        for (const area of areaNames) {
+          for (const category of categoryNames) {
+            rows.push({ name: placeName, area, category });
+          }
+        }
+
+        const { error } = await supabaseClient.from("places").upsert(rows, {
+          onConflict: "name,area,category",
+        });
+        if (error) {
+          throw error;
+        }
+      }
+
+      async function persistDelete(area, place, categoryKeys) {
+        if (!supabaseClient) {
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from("places")
+          .delete()
+          .eq("name", place)
+          .eq("area", area)
+          .in("category", categoryKeys);
+
+        if (error) {
+          throw error;
+        }
+      }
+
+      function showError(message) {
+        document.getElementById("result").textContent = message;
+      }
+
+      function normalizeData(data) {
+        if (!data || typeof data !== "object" || Array.isArray(data)) {
+          return normalizeData(cloneSeed());
+        }
+
+        const categories = new Set();
+        for (const area of Object.values(data)) {
+          if (!area || typeof area !== "object" || Array.isArray(area)) {
+            continue;
+          }
+          for (const category of Object.keys(area)) {
+            if (category !== LEGACY_EVERYWHERE_CATEGORY) {
+              categories.add(category);
+            }
+          }
+        }
+
+        if (categories.size === 0) {
+          return normalizeData(cloneSeed());
+        }
+
+        const categoryList = [...categories].sort((a, b) => a.localeCompare(b));
+
+        if (!data[EVERYWHERE_AREA] || typeof data[EVERYWHERE_AREA] !== "object") {
+          data[EVERYWHERE_AREA] = {};
+        }
+
+        for (const [areaName, areaData] of Object.entries(data)) {
+          if (!areaData || typeof areaData !== "object" || Array.isArray(areaData)) {
+            delete data[areaName];
+            continue;
+          }
+
+          const legacyPlaces = areaData[LEGACY_EVERYWHERE_CATEGORY] ?? [];
+          for (const place of legacyPlaces) {
+            for (const category of categoryList) {
+              if (!data[EVERYWHERE_AREA][category]) {
+                data[EVERYWHERE_AREA][category] = [];
+              }
+              if (!data[EVERYWHERE_AREA][category].includes(place)) {
+                data[EVERYWHERE_AREA][category].push(place);
+              }
+            }
+          }
+          delete areaData[LEGACY_EVERYWHERE_CATEGORY];
+        }
+
+        for (const area of Object.keys(data)) {
+          if (!data[area] || typeof data[area] !== "object") {
+            data[area] = {};
+          }
+          for (const category of categoryList) {
+            if (!Array.isArray(data[area][category])) {
+              data[area][category] = [];
+            }
+            data[area][category].sort((a, b) => a.localeCompare(b));
+          }
+        }
+
+        return data;
+      }
+
+      function formatLabel(value) {
+        if (!value) {
+          return "";
+        }
+        return value.charAt(0).toUpperCase() + value.slice(1);
+      }
+
+      function normalizeCategory(value) {
+        return value.trim().toLowerCase();
+      }
+
+      function getAreas() {
+        const areas = Object.keys(namesByArea).sort((a, b) => a.localeCompare(b));
+        const everywhereIndex = areas.indexOf(EVERYWHERE_AREA);
+        if (everywhereIndex > 0) {
+          areas.splice(everywhereIndex, 1);
+          areas.unshift(EVERYWHERE_AREA);
+        }
+        return areas;
+      }
+
+      function getAllCategories() {
+        const categories = new Set();
+        for (const area of Object.values(namesByArea)) {
+          for (const category of Object.keys(area)) {
+            categories.add(category);
+          }
+        }
+        return [...categories].sort((a, b) => a.localeCompare(b));
+      }
+
+      function parseList(value) {
+        return value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      function getCheckedValues(container) {
+        return [...container.querySelectorAll('input[type="checkbox"]:checked')].map(
+          (input) => input.value
+        );
+      }
+
+      function renderCheckboxGroup(container, values, groupName, { format = formatLabel } = {}) {
+        const checked = new Set(getCheckedValues(container));
+        container.innerHTML = "";
+
+        if (values.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "add-hint";
+          empty.textContent = "None yet — add below.";
+          container.appendChild(empty);
+          return;
+        }
+
+        for (const value of values) {
+          const label = document.createElement("label");
+          label.className = "checkbox-item";
+
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.name = groupName;
+          input.value = value;
+          input.checked = checked.has(value);
+
+          label.appendChild(input);
+          label.appendChild(document.createTextNode(format(value)));
+          container.appendChild(label);
+        }
+      }
+
+      function fillSelect(select, values, { labels = {} } = {}) {
+        const previous = select.value;
+        select.innerHTML = "";
+
+        for (const value of values) {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = labels[value] ?? formatLabel(value);
+          select.appendChild(option);
+        }
+
+        if (values.includes(previous)) {
+          select.value = previous;
+        } else if (values.length > 0) {
+          select.value = values[0];
+        }
+      }
+
+      function populateCategoryDropdown() {
+        fillSelect(categorySelect, getAllCategories());
+      }
+
+      function populateMainDropdowns() {
+        fillSelect(areaSelect, getAreas());
+        populateCategoryDropdown();
+      }
+
+      function resolveAreasForAdd() {
+        const areas = [
+          ...getCheckedValues(addAreaList),
+          ...parseList(addAreaNew.value),
+        ];
+        return [...new Set(areas)];
+      }
+
+      function resolveCategoriesForAdd() {
+        const categories = [
+          ...getCheckedValues(addCategoryList),
+          ...parseList(addCategoryNew.value).map(normalizeCategory),
+        ].filter(Boolean);
+        return [...new Set(categories)];
+      }
+
+      function populateAddAreaCheckboxes() {
+        renderCheckboxGroup(addAreaList, getAreas(), "add-area");
+      }
+
+      function populateAddCategoryCheckboxes() {
+        renderCheckboxGroup(addCategoryList, getAllCategories(), "add-category");
+      }
+
+      function showAddStep(step) {
+        for (const [key, panel] of Object.entries(addSteps)) {
+          panel.hidden = key !== step;
+        }
+        addStepLabel.textContent = addStepTitles[step];
+      }
+
+      function precheckAddCheckbox(container, value) {
+        if (typeof CSS !== "undefined" && CSS.escape) {
+          const input = container.querySelector(`input[value="${CSS.escape(value)}"]`);
+          if (input) {
+            input.checked = true;
+          }
+          return;
+        }
+        for (const input of container.querySelectorAll('input[type="checkbox"]')) {
+          if (input.value === value) {
+            input.checked = true;
+          }
+        }
+      }
+
+      function openAddDialog() {
+        addForm.reset();
+        addWizard.areas = [];
+        addWizard.categories = [];
+        showAddStep("name");
+        addDialog.showModal();
+        addPlaceInput.focus();
+      }
+
+      function goToAreaStep() {
+        const placeName = addPlaceInput.value.trim();
+        if (!placeName) {
+          addPlaceInput.focus();
+          return;
+        }
+
+        populateAddAreaCheckboxes();
+        precheckAddCheckbox(addAreaList, areaSelect.value);
+        showAddStep("area");
+        addAreaNew.focus();
+      }
+
+      function goToCategoryStep() {
+        const areaNames = resolveAreasForAdd();
+        if (areaNames.length === 0) {
+          addAreaNew.focus();
+          return;
+        }
+
+        addWizard.areas = areaNames;
+        populateAddCategoryCheckboxes();
+        precheckAddCheckbox(addCategoryList, categorySelect.value);
+        showAddStep("category");
+        addCategoryNew.focus();
+      }
+
+      function closeAddDialog() {
+        addDialog.close();
+      }
+
+      function addPlaceToData(areaName, categoryName, placeName) {
+        if (!namesByArea[areaName]) {
+          namesByArea[areaName] = {};
+        }
+        if (!namesByArea[areaName][categoryName]) {
+          namesByArea[areaName][categoryName] = [];
+        }
+
+        const places = namesByArea[areaName][categoryName];
+        if (!places.includes(placeName)) {
+          places.push(placeName);
+          places.sort((a, b) => a.localeCompare(b));
+        }
+      }
+
+      function getPickPool(area, category) {
+        if (area === EVERYWHERE_AREA) {
+          return namesByArea[EVERYWHERE_AREA]?.[category] ?? [];
+        }
+
+        const pool = new Set(namesByArea[area]?.[category] ?? []);
+        for (const place of namesByArea[EVERYWHERE_AREA]?.[category] ?? []) {
+          pool.add(place);
+        }
+        return [...pool];
+      }
+
+      function getAllPlaceRows() {
+        const grouped = new Map();
+
+        for (const area of getAreas()) {
+          for (const category of getAllCategories()) {
+            const places = namesByArea[area]?.[category] ?? [];
+            for (const place of places) {
+              const key = `${area}\0${place}`;
+              if (!grouped.has(key)) {
+                grouped.set(key, { place, area, categories: new Set() });
+              }
+              grouped.get(key).categories.add(category);
+            }
+          }
+        }
+
+        return [...grouped.values()]
+          .map(({ place, area, categories }) => {
+            const categoryKeys = [...categories].sort((a, b) => a.localeCompare(b));
+            return {
+              place,
+              area,
+              categoryKeys,
+              category: categoryKeys.map(formatLabel).join(", "),
+            };
+          })
+          .sort((a, b) => a.area.localeCompare(b.area) || a.place.localeCompare(b.place));
+      }
+
+      async function deletePlace(area, place, categoryKeys) {
+        for (const category of categoryKeys) {
+          const places = namesByArea[area]?.[category];
+          if (!places) {
+            continue;
+          }
+          const index = places.indexOf(place);
+          if (index !== -1) {
+            places.splice(index, 1);
+          }
+        }
+
+        try {
+          await persistDelete(area, place, categoryKeys);
+        } catch (error) {
+          showError("Could not delete place.");
+          console.error(error);
+          try {
+            namesByArea = await loadData();
+            populateMainDropdowns();
+            renderViewTable();
+          } catch {
+            /* keep local state */
+          }
+          return;
+        }
+
+        populateMainDropdowns();
+        renderViewTable();
+      }
+
+      function closeViewRowMenus() {
+        if (!viewRowMenu) {
+          return;
+        }
+        viewRowMenu.classList.remove("is-open");
+        if (activeMenuButton) {
+          activeMenuButton.setAttribute("aria-expanded", "false");
+          activeMenuButton = null;
+        }
+      }
+
+      function openViewRowMenu(menuButton, area, place, categoryKeys) {
+        if (!viewRowMenu || !viewRowDelete) {
+          return;
+        }
+        activeMenuButton = menuButton;
+        menuButton.setAttribute("aria-expanded", "true");
+
+        viewRowDelete.dataset.area = area;
+        viewRowDelete.dataset.place = place;
+        viewRowDelete.dataset.categories = JSON.stringify(categoryKeys);
+
+        viewRowMenu.classList.add("is-open");
+
+        const rect = menuButton.getBoundingClientRect();
+        const panelWidth = viewRowMenu.offsetWidth || 104;
+        const panelHeight = viewRowMenu.offsetHeight || 44;
+        const menuGap = 8;
+        const viewportPad = 8;
+        let top = rect.top + rect.height / 2 - panelHeight / 2;
+        let left = rect.left - panelWidth - menuGap;
+
+        top = Math.max(viewportPad, Math.min(top, window.innerHeight - panelHeight - viewportPad));
+        left = Math.max(viewportPad, left);
+
+        viewRowMenu.style.top = `${top}px`;
+        viewRowMenu.style.left = `${left}px`;
+      }
+
+      function createRowMenuButton(place, area, categoryKeys) {
+        const menu = document.createElement("div");
+        menu.className = "view-row-menu";
+
+        const menuButton = document.createElement("button");
+        menuButton.type = "button";
+        menuButton.className = "view-row-menu-btn";
+        menuButton.setAttribute("aria-label", `Options for ${place}`);
+        menuButton.setAttribute("aria-expanded", "false");
+        menuButton.innerHTML =
+          '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/></svg>';
+
+        menuButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const isOpen = activeMenuButton === menuButton && viewRowMenu.classList.contains("is-open");
+          closeViewRowMenus();
+          if (!isOpen) {
+            openViewRowMenu(menuButton, area, place, categoryKeys);
+          }
+        });
+
+        menu.appendChild(menuButton);
+        return menu;
+      }
+
+      function renderViewTable() {
+        const tbody = document.getElementById("view-table-body");
+        const rows = getAllPlaceRows();
+        tbody.innerHTML = "";
+
+        if (rows.length === 0) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 4;
+          cell.className = "view-empty";
+          cell.textContent = "No places yet.";
+          row.appendChild(cell);
+          tbody.appendChild(row);
+          return;
+        }
+
+        for (const { place, category, area, categoryKeys } of rows) {
+          const row = document.createElement("tr");
+
+          const placeCell = document.createElement("td");
+          placeCell.textContent = place;
+          row.appendChild(placeCell);
+
+          const categoryCell = document.createElement("td");
+          categoryCell.textContent = category;
+          row.appendChild(categoryCell);
+
+          const areaCell = document.createElement("td");
+          areaCell.textContent = area;
+          row.appendChild(areaCell);
+
+          const actionsCell = document.createElement("td");
+          actionsCell.className = "view-row-actions";
+          actionsCell.appendChild(createRowMenuButton(place, area, categoryKeys));
+          row.appendChild(actionsCell);
+
+          tbody.appendChild(row);
+        }
+      }
+
+      function openViewDialog() {
+        renderViewTable();
+        document.getElementById("view-dialog").showModal();
+      }
+
+      function closeViewDialog() {
+        closeViewRowMenus();
+        document.getElementById("view-dialog").close();
+      }
+
+      async function addPlaces(areaNames, categoryNames, placeName) {
+        for (const areaName of areaNames) {
+          for (const categoryName of categoryNames) {
+            addPlaceToData(areaName, categoryName, placeName);
+          }
+        }
+
+        try {
+          await persistAdds(areaNames, categoryNames, placeName);
+        } catch (error) {
+          showError("Could not save place.");
+          console.error(error);
+          try {
+            namesByArea = await loadData();
+            populateMainDropdowns();
+          } catch {
+            /* keep local state */
+          }
+          return;
+        }
+
+        populateMainDropdowns();
+        areaSelect.value = areaNames[0];
+        categorySelect.value = categoryNames[0];
+      }
+
+      document.getElementById("add-open").addEventListener("click", openAddDialog);
+      document.getElementById("add-cancel").addEventListener("click", closeAddDialog);
+      document.getElementById("view-all").addEventListener("click", openViewDialog);
+      document.getElementById("view-close").addEventListener("click", closeViewDialog);
+
+      viewRowDelete?.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        if (!viewRowDelete.dataset.categories) {
+          return;
+        }
+        await deletePlace(
+          viewRowDelete.dataset.area,
+          viewRowDelete.dataset.place,
+          JSON.parse(viewRowDelete.dataset.categories)
+        );
+        closeViewRowMenus();
+      });
+
+      document.getElementById("view-dialog").addEventListener("click", (event) => {
+        if (
+          !event.target.closest(".view-row-menu") &&
+          !event.target.closest("#view-row-menu")
+        ) {
+          closeViewRowMenus();
+        }
+      });
+
+      document.querySelector(".view-table-wrap")?.addEventListener("scroll", closeViewRowMenus);
+      document.getElementById("add-next-name").addEventListener("click", goToAreaStep);
+      document.getElementById("add-next-area").addEventListener("click", goToCategoryStep);
+
+      for (const backButton of document.querySelectorAll(".add-dialog-back")) {
+        backButton.addEventListener("click", () => {
+          showAddStep(backButton.dataset.back);
+        });
+      }
+
+      document.getElementById("pick").addEventListener("click", () => {
+        const area = areaSelect.value;
+        const category = categorySelect.value;
+        const names = getPickPool(area, category);
+
+        if (names.length === 0) {
+          document.getElementById("result").textContent = "No places yet";
+          return;
+        }
+
+        const index = Math.floor(Math.random() * names.length);
+        document.getElementById("result").textContent = names[index];
+      });
+
+      addForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const placeName = addPlaceInput.value.trim();
+        const categoryNames = resolveCategoriesForAdd();
+
+        if (!placeName) {
+          showAddStep("name");
+          addPlaceInput.focus();
+          return;
+        }
+        if (categoryNames.length === 0) {
+          addCategoryNew.focus();
+          return;
+        }
+
+        await addPlaces(addWizard.areas, categoryNames, placeName);
+        closeAddDialog();
+      });
+
+      async function init() {
+        try {
+          namesByArea = await loadData();
+        } catch (error) {
+          console.error(error);
+          showError("Could not load places.");
+          namesByArea = loadLocalData();
+        }
+        populateMainDropdowns();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
