@@ -16,6 +16,7 @@ html {
 body {
   margin: 0;
   font-family: "Manrope", Arial, sans-serif;
+  font-size: 1rem;
   color: var(--text);
   background: #1b1c1f;
 }
@@ -202,7 +203,7 @@ img {
   margin: 0;
   color: #ffffff;
   font-family: "Gowun Batang", serif;
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.7;
   text-shadow: 0 1px 20px rgba(0, 0, 0, 0.35);
 }
@@ -279,7 +280,7 @@ img {
 
 .contact-details-column p {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.7;
   text-align: left;
 }
@@ -377,8 +378,12 @@ img {
 
 .about-copy-column p {
   margin: 0 0 1.25rem;
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.8;
+}
+
+.arques-copy-column h1 {
+  font-size: clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .geographer-layout {
@@ -413,7 +418,7 @@ img {
 
 .geographer-copy-column p {
   margin: 0 0 1.25rem;
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.8;
 }
 
@@ -718,6 +723,52 @@ img {
   font-size: clamp(1.1rem, 2.5vw, 2rem);
 }
 
+.woodworking-intro {
+  margin-bottom: 2.5rem;
+}
+
+.woodworking-intro-image {
+  width: 50%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+}
+
+.woodworking-intro-copy {
+  width: 50%;
+  margin: 1.5rem auto 0;
+  text-align: left;
+}
+
+.woodworking-intro-copy p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.woodworking-intro .category-card-body h1 {
+  font-family: "Gowun Batang", serif;
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+}
+
+.woodworking-intro a {
+  color: #111111;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.woodworking-portfolio-heading {
+  font-family: "Gowun Batang", serif;
+  margin: 0 0 2rem;
+  text-align: center;
+  font-size: clamp(1.1rem, 2.5vw, 2rem);
+  font-weight: 700;
+}
+
 .woodworking-gallery {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -732,6 +783,11 @@ img {
   object-fit: cover;
   display: block;
   cursor: zoom-in;
+}
+
+.woodworking-gallery-image-zoomed {
+  transform: scale(1.15);
+  transform-origin: center;
 }
 
 .woodworking-gallery-item {
@@ -771,7 +827,7 @@ img {
 
 .woodworking-gallery-caption-title {
   font-family: "Gowun Batang", serif;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -879,7 +935,7 @@ img {
 
 .woodworking-copy p {
   margin: 0 0 1rem;
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.8;
 }
 
