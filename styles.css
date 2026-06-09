@@ -372,7 +372,7 @@ img {
 .about-copy-column h1 {
   font-family: "Gowun Batang", serif;
   margin: 0 0 1.5rem;
-  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-size: clamp(1.25rem, 3vw, 2.5rem);
   line-height: 0.95;
 }
 
@@ -380,10 +380,6 @@ img {
   margin: 0 0 1.25rem;
   font-size: 1rem;
   line-height: 1.8;
-}
-
-.arques-copy-column h1 {
-  font-size: clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .geographer-layout {
