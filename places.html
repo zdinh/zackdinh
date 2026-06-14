@@ -297,7 +297,7 @@
         border-radius: 1rem;
         padding: 0;
         max-width: calc(100vw - 2rem);
-        width: min(36rem, calc(100vw - 2rem));
+        width: min(52rem, calc(100vw - 2rem));
         background: #f5f2eb;
         color: #1a1a1a;
         box-shadow: 0 1rem 2rem rgb(0 0 0 / 15%);
@@ -357,22 +357,31 @@
 
       .view-table th:nth-child(2),
       .view-table td:nth-child(2) {
-        width: 28%;
+        width: 16%;
       }
 
       .view-table th:nth-child(3),
       .view-table td:nth-child(3) {
-        width: 26%;
+        width: 16%;
       }
 
       .view-table th:nth-child(4),
       .view-table td:nth-child(4) {
-        width: 18%;
+        width: 14%;
       }
 
       .view-table th:nth-child(5),
       .view-table td:nth-child(5) {
-        width: 10%;
+        width: 28%;
+      }
+
+      .view-table td.notes-cell,
+      .view-table th.notes-head {
+        white-space: normal;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
       }
 
       .view-table td.status-cell,
@@ -382,8 +391,8 @@
         white-space: nowrap;
       }
 
-      .view-table td:not(.view-row-actions):not(.status-cell),
-      .view-table th:not(.view-row-actions-head):not(.status-head) {
+      .view-table td:not(.view-row-actions):not(.status-cell):not(.notes-cell),
+      .view-table th:not(.view-row-actions-head):not(.status-head):not(.notes-head) {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -706,6 +715,7 @@
                   <th scope="col">Place</th>
                   <th scope="col">Category</th>
                   <th scope="col">Area</th>
+                  <th scope="col" class="notes-head">Notes</th>
                   <th scope="col" class="view-row-actions-head"><span class="hidden">Actions</span></th>
                 </tr>
               </thead>
@@ -1660,6 +1670,7 @@
               categoryKeys,
               active,
               category: categoryKeys.map(formatLabel).join(", "),
+              notes: getPlaceNotes(area, categoryKeys[0], place),
             };
           })
           .sort((a, b) => a.area.localeCompare(b.area) || a.place.localeCompare(b.place));
@@ -1815,7 +1826,7 @@
         if (rows.length === 0) {
           const row = document.createElement("tr");
           const cell = document.createElement("td");
-          cell.colSpan = 5;
+          cell.colSpan = 6;
           cell.className = "view-empty";
           cell.textContent = hasFilters
             ? "No places match these filters."
@@ -1825,7 +1836,7 @@
           return;
         }
 
-        for (const { place, category, area, categoryKeys, active } of rows) {
+        for (const { place, category, area, categoryKeys, active, notes } of rows) {
           const row = document.createElement("tr");
 
           const statusCell = document.createElement("td");
@@ -1844,6 +1855,14 @@
           const areaCell = document.createElement("td");
           areaCell.textContent = area;
           row.appendChild(areaCell);
+
+          const notesCell = document.createElement("td");
+          notesCell.className = "notes-cell";
+          notesCell.textContent = notes;
+          if (notes) {
+            notesCell.title = notes;
+          }
+          row.appendChild(notesCell);
 
           const actionsCell = document.createElement("td");
           actionsCell.className = "view-row-actions";
