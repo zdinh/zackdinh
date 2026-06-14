@@ -110,7 +110,23 @@
         color: #1a1a1a;
       }
 
+      .text-area {
+        font: inherit;
+        font-weight: 500;
+        font-size: 1rem;
+        width: 100%;
+        min-height: 6rem;
+        padding: 0.75rem 1.25rem;
+        border: 2px solid #1a1a1a;
+        border-radius: 1rem;
+        background: #fff;
+        color: #1a1a1a;
+        resize: vertical;
+        line-height: 1.4;
+      }
+
       .text-input:focus,
+      .text-area:focus,
       select:focus {
         outline: none;
       }
@@ -651,6 +667,23 @@
             <button type="button" class="add-dialog-back" data-back="area">
               Back
             </button>
+            <button type="button" id="add-next-category">Next</button>
+          </div>
+        </section>
+
+        <section class="add-step" id="add-step-notes" data-step="notes" hidden aria-labelledby="add-step-label">
+          <div class="add-field">
+            <textarea
+              class="text-area"
+              id="add-notes"
+              placeholder="Notes"
+              rows="4"
+            ></textarea>
+          </div>
+          <div class="add-dialog-actions">
+            <button type="button" class="add-dialog-back" data-back="category">
+              Back
+            </button>
             <button type="submit" id="add-submit">Add</button>
           </div>
         </section>
@@ -929,6 +962,7 @@
       let namesByArea;
       let bootstrapPromise = null;
       let placeStatus = {};
+      let placeNotes = {};
 
       function placeStatusKey(area, category, name) {
         return `${area}\0${category}\0${name}`;
@@ -942,12 +976,30 @@
         placeStatus[placeStatusKey(area, category, name)] = active;
       }
 
+      function getPlaceNotes(area, category, name) {
+        return placeNotes[placeStatusKey(area, category, name)] ?? "";
+      }
+
+      function setPlaceNotes(area, category, name, notes) {
+        const key = placeStatusKey(area, category, name);
+        if (notes) {
+          placeNotes[key] = notes;
+        } else {
+          delete placeNotes[key];
+        }
+      }
+
+      function clearPlaceNotes(area, category, name) {
+        delete placeNotes[placeStatusKey(area, category, name)];
+      }
+
       function clearPlaceActive(area, category, name) {
         delete placeStatus[placeStatusKey(area, category, name)];
       }
 
       function resetPlaceStatus() {
         placeStatus = {};
+        placeNotes = {};
       }
 
       function createStatusIndicator(active) {
@@ -988,22 +1040,26 @@
       const addAreaNew = document.getElementById("add-area-new");
       const addCategoryNew = document.getElementById("add-category-new");
       const addPlaceInput = document.getElementById("add-place");
+      const addNotesInput = document.getElementById("add-notes");
       const addStepLabel = document.getElementById("add-step-label");
       const addSteps = {
         area: document.getElementById("add-step-area"),
         category: document.getElementById("add-step-category"),
         name: document.getElementById("add-step-name"),
+        notes: document.getElementById("add-step-notes"),
       };
 
       const addWizard = {
         areas: [],
         categories: [],
+        notes: "",
       };
 
       const addStepTitles = {
         name: "Place name",
         area: "Area",
         category: "Category",
+        notes: "Notes",
       };
 
       function emptyPlacesData() {
@@ -1015,6 +1071,9 @@
         const data = {};
         for (const row of rows) {
           setPlaceActive(row.area, row.category, row.name, row.active !== false);
+          if (row.notes) {
+            setPlaceNotes(row.area, row.category, row.name, row.notes);
+          }
           if (!data[row.area]) {
             data[row.area] = {};
           }
@@ -1045,6 +1104,7 @@
                   area,
                   category,
                   active: isPlaceActive(area, category, name),
+                  notes: getPlaceNotes(area, category, name) || null,
                 });
               }
             }
@@ -1072,11 +1132,11 @@
 
         let { data, error } = await supabaseClient
           .from("places")
-          .select("name, area, category, active");
+          .select("name, area, category, active, notes");
 
         if (error) {
           const retry = await supabaseClient.from("places").select("name, area, category");
-          data = retry.data?.map((row) => ({ ...row, active: true })) ?? null;
+          data = retry.data?.map((row) => ({ ...row, active: true, notes: null })) ?? null;
           error = retry.error;
         }
 
@@ -1110,8 +1170,13 @@
         return emptyPlacesData();
       }
 
-      async function persistAdds(areaNames, categoryNames, placeName) {
+      async function persistAdds(areaNames, categoryNames, placeName, notes = "") {
         if (!supabaseClient) {
+          for (const area of areaNames) {
+            for (const category of categoryNames) {
+              setPlaceNotes(area, category, placeName, notes);
+            }
+          }
           return;
         }
 
@@ -1119,7 +1184,14 @@
         for (const area of areaNames) {
           for (const category of categoryNames) {
             setPlaceActive(area, category, placeName, true);
-            rows.push({ name: placeName, area, category, active: true });
+            setPlaceNotes(area, category, placeName, notes);
+            rows.push({
+              name: placeName,
+              area,
+              category,
+              active: true,
+              notes: notes || null,
+            });
           }
         }
 
@@ -1418,6 +1490,7 @@
         addForm.reset();
         addWizard.areas = [];
         addWizard.categories = [];
+        addWizard.notes = "";
         setAddDialogMode("add");
         showAddStep("name");
         addDialog.showModal();
@@ -1471,6 +1544,28 @@
         addCategoryNew.focus();
       }
 
+      function goToNotesStep() {
+        const categoryNames = resolveCategoriesForAdd();
+        if (categoryNames.length === 0) {
+          addCategoryNew.focus();
+          return;
+        }
+
+        addWizard.categories = categoryNames;
+
+        if (editPlace) {
+          const existingNotes = getPlaceNotes(
+            editPlace.area,
+            editPlace.categoryKeys[0],
+            editPlace.place
+          );
+          addNotesInput.value = existingNotes;
+        }
+
+        showAddStep("notes");
+        addNotesInput.focus();
+      }
+
       function closeAddDialog() {
         editPlace = null;
         setAddDialogMode("add");
@@ -1488,6 +1583,7 @@
             places.splice(index, 1);
           }
           clearPlaceActive(areaName, category, placeName);
+          clearPlaceNotes(areaName, category, placeName);
         }
       }
 
@@ -1505,6 +1601,14 @@
           places.sort((a, b) => a.localeCompare(b));
         }
         setPlaceActive(areaName, categoryName, placeName, true);
+      }
+
+      function setPlaceNotesForAll(areaNames, categoryNames, placeName, notes) {
+        for (const areaName of areaNames) {
+          for (const categoryName of categoryNames) {
+            setPlaceNotes(areaName, categoryName, placeName, notes);
+          }
+        }
       }
 
       function getPickPool(area, category) {
@@ -1572,6 +1676,7 @@
             places.splice(index, 1);
           }
           clearPlaceActive(area, category, place);
+          clearPlaceNotes(area, category, place);
         }
 
         try {
@@ -1778,7 +1883,14 @@
         document.getElementById("view-dialog").close();
       }
 
-      async function updatePlace(originalPlace, originalArea, placeName, areaNames, categoryNames) {
+      async function updatePlace(
+        originalPlace,
+        originalArea,
+        placeName,
+        areaNames,
+        categoryNames,
+        notes = ""
+      ) {
         removePlaceFromArea(originalPlace, originalArea);
 
         try {
@@ -1796,19 +1908,21 @@
           return;
         }
 
-        await addPlaces(areaNames, categoryNames, placeName);
+        await addPlaces(areaNames, categoryNames, placeName, notes);
         renderViewTable();
       }
 
-      async function addPlaces(areaNames, categoryNames, placeName) {
+      async function addPlaces(areaNames, categoryNames, placeName, notes = "") {
         for (const areaName of areaNames) {
           for (const categoryName of categoryNames) {
             addPlaceToData(areaName, categoryName, placeName);
           }
         }
 
+        setPlaceNotesForAll(areaNames, categoryNames, placeName, notes);
+
         try {
-          await persistAdds(areaNames, categoryNames, placeName);
+          await persistAdds(areaNames, categoryNames, placeName, notes);
         } catch (error) {
           showError("Could not save place.");
           console.error(error);
@@ -1891,6 +2005,7 @@
       document.querySelector(".view-table-scroll")?.addEventListener("scroll", closeViewRowMenus);
       document.getElementById("add-next-name").addEventListener("click", goToAreaStep);
       document.getElementById("add-next-area").addEventListener("click", goToCategoryStep);
+      document.getElementById("add-next-category").addEventListener("click", goToNotesStep);
 
       for (const backButton of document.querySelectorAll(".add-dialog-back")) {
         backButton.addEventListener("click", () => {
@@ -1932,19 +2047,23 @@
         } else if (step === "area") {
           event.preventDefault();
           goToCategoryStep();
+        } else if (step === "category") {
+          event.preventDefault();
+          goToNotesStep();
         }
       });
 
       addForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        if (getAddStep() !== "category") {
+        if (getAddStep() !== "notes") {
           return;
         }
 
         const placeName = addPlaceInput.value.trim();
         const areaNames = resolveAreasForAdd();
         const categoryNames = resolveCategoriesForAdd();
+        const notes = addNotesInput.value.trim();
 
         if (!placeName) {
           showAddStep("name");
@@ -1957,6 +2076,7 @@
           return;
         }
         if (categoryNames.length === 0) {
+          showAddStep("category");
           addCategoryNew.focus();
           return;
         }
@@ -1967,10 +2087,11 @@
             editPlace.area,
             placeName,
             areaNames,
-            categoryNames
+            categoryNames,
+            notes
           );
         } else {
-          await addPlaces(areaNames, categoryNames, placeName);
+          await addPlaces(areaNames, categoryNames, placeName, notes);
         }
         closeAddDialog();
       });
