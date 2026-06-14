@@ -779,7 +779,7 @@
 
     <dialog class="view-dialog" id="view-dialog" aria-labelledby="view-dialog-title">
       <div class="view-dialog-inner">
-        <h2 id="view-dialog-title">All places</h2>
+        <h2 id="view-dialog-title" tabindex="-1">All places</h2>
         <div class="view-filters">
           <select id="view-filter-area" aria-label="Filter by area"></select>
           <select id="view-filter-category" aria-label="Filter by category"></select>
@@ -1975,7 +1975,9 @@
       function openViewDialog() {
         populateViewFilters();
         renderViewTable();
-        document.getElementById("view-dialog").showModal();
+        const viewDialog = document.getElementById("view-dialog");
+        viewDialog.showModal();
+        document.getElementById("view-dialog-title").focus();
       }
 
       function closeViewDialog() {
