@@ -378,10 +378,14 @@
       .view-table td.notes-cell,
       .view-table th.notes-head {
         white-space: normal;
-        overflow: hidden;
+        vertical-align: top;
+      }
+
+      .notes-text {
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
+        overflow: hidden;
       }
 
       .view-table td.status-cell,
@@ -431,8 +435,8 @@
         position: sticky;
         right: 0;
         background: #fff;
-        z-index: 2;
-        box-shadow: -6px 0 8px rgb(0 0 0 / 4%);
+        z-index: 1;
+        box-shadow: -4px 0 6px rgb(0 0 0 / 6%);
       }
 
       .view-table th.view-row-actions-head {
@@ -1858,9 +1862,12 @@
 
           const notesCell = document.createElement("td");
           notesCell.className = "notes-cell";
-          notesCell.textContent = notes;
           if (notes) {
-            notesCell.title = notes;
+            const notesText = document.createElement("span");
+            notesText.className = "notes-text";
+            notesText.textContent = notes;
+            notesText.title = notes;
+            notesCell.appendChild(notesText);
           }
           row.appendChild(notesCell);
 
