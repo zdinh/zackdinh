@@ -856,10 +856,6 @@ img {
   opacity: 1;
 }
 
-.portfolio-page img {
-  filter: grayscale(100%);
-}
-
 .woodworking-gallery img:focus-visible,
 .woodworking-gallery-item img:focus-visible {
   outline: 2px solid #111111;

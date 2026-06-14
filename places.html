@@ -14,6 +14,7 @@
     <style>
       * {
         box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
       }
 
       :root {
@@ -125,9 +126,8 @@
         line-height: 1.4;
       }
 
-      .text-input:focus,
-      .text-area:focus,
-      select:focus {
+      :where(button, select, input, textarea, dialog, [tabindex]):focus,
+      :where(button, select, input, textarea, dialog, [tabindex]):focus-visible {
         outline: none;
       }
 
@@ -777,9 +777,9 @@
       </form>
     </dialog>
 
-    <dialog class="view-dialog" id="view-dialog" aria-labelledby="view-dialog-title">
+    <dialog class="view-dialog" id="view-dialog" aria-labelledby="view-dialog-title" tabindex="-1">
       <div class="view-dialog-inner">
-        <h2 id="view-dialog-title" tabindex="-1">All places</h2>
+        <h2 id="view-dialog-title">All places</h2>
         <div class="view-filters">
           <select id="view-filter-area" aria-label="Filter by area"></select>
           <select id="view-filter-category" aria-label="Filter by category"></select>
@@ -1977,7 +1977,7 @@
         renderViewTable();
         const viewDialog = document.getElementById("view-dialog");
         viewDialog.showModal();
-        document.getElementById("view-dialog-title").focus();
+        viewDialog.focus();
       }
 
       function closeViewDialog() {
