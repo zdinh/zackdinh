@@ -810,6 +810,17 @@
       </div>
     </dialog>
 
+    <dialog class="add-dialog" id="delete-confirm-dialog" aria-labelledby="delete-confirm-title">
+      <div class="add-dialog-inner">
+        <h2 id="delete-confirm-title">Delete place?</h2>
+        <p class="add-step-label" id="delete-confirm-message"></p>
+        <div class="add-dialog-actions">
+          <button type="button" class="add-dialog-cancel" id="delete-confirm-no">No</button>
+          <button type="button" id="delete-confirm-yes">Yes</button>
+        </div>
+      </div>
+    </dialog>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1289,6 +1300,11 @@
       const viewRowEdit = document.getElementById("view-row-edit");
       const viewRowDelete = document.getElementById("view-row-delete");
       const viewRowToggleActive = document.getElementById("view-row-toggle-active");
+      const deleteConfirmDialog = document.getElementById("delete-confirm-dialog");
+      const deleteConfirmMessage = document.getElementById("delete-confirm-message");
+      const deleteConfirmYes = document.getElementById("delete-confirm-yes");
+      const deleteConfirmNo = document.getElementById("delete-confirm-no");
+      let pendingDelete = null;
       const addDialogTitle = document.getElementById("add-dialog-title");
       const addSubmitBtn = document.getElementById("add-submit");
       let editPlace = null;
@@ -2395,17 +2411,39 @@
         closeViewRowMenus();
       });
 
-      viewRowDelete?.addEventListener("click", async (event) => {
+      viewRowDelete?.addEventListener("click", (event) => {
         event.stopPropagation();
         if (!viewRowDelete.dataset.categories) {
           return;
         }
-        await deletePlace(
-          viewRowDelete.dataset.area,
-          viewRowDelete.dataset.place,
-          JSON.parse(viewRowDelete.dataset.categories)
-        );
+        pendingDelete = {
+          area: viewRowDelete.dataset.area,
+          place: viewRowDelete.dataset.place,
+          categoryKeys: JSON.parse(viewRowDelete.dataset.categories),
+        };
+        deleteConfirmMessage.textContent = `Delete "${pendingDelete.place}"?`;
         closeViewRowMenus();
+        deleteConfirmDialog.showModal();
+      });
+
+      deleteConfirmNo?.addEventListener("click", () => {
+        pendingDelete = null;
+        deleteConfirmDialog.close();
+      });
+
+      deleteConfirmYes?.addEventListener("click", async () => {
+        const target = pendingDelete;
+        if (!target) {
+          deleteConfirmDialog.close();
+          return;
+        }
+        pendingDelete = null;
+        deleteConfirmDialog.close();
+        await deletePlace(target.area, target.place, target.categoryKeys);
+      });
+
+      deleteConfirmDialog?.addEventListener("close", () => {
+        pendingDelete = null;
       });
 
       document.getElementById("view-dialog").addEventListener("click", (event) => {
