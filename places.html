@@ -818,15 +818,46 @@
       const STORAGE_KEY = "places-data";
       const EVERYWHERE_AREA = "Everywhere";
       const BLANK_AREA = "";
+      const PLACEHOLDER_AREA = "-";
       const MOVIE_CATEGORY = "movie";
+      const MOVIES_CATEGORY = "movies";
       const LEGACY_EVERYWHERE_CATEGORY = "everywhere";
 
+      function normalizeCategory(value) {
+        return String(value ?? "").trim().toLowerCase();
+      }
+
+      function isBlankArea(area) {
+        return (area ?? BLANK_AREA) === BLANK_AREA;
+      }
+
+      function movieAreaNeedsMigration(area) {
+        return !isBlankArea(area);
+      }
+
       function isMovieCategory(category) {
-        return normalizeCategory(category) === MOVIE_CATEGORY;
+        const normalized = normalizeCategory(category);
+        return normalized === MOVIE_CATEGORY || normalized === MOVIES_CATEGORY;
+      }
+
+      function displayAreaForRow(area, categoryKeys) {
+        if (categoryKeys.every(isMovieCategory)) {
+          return BLANK_AREA;
+        }
+        return area === PLACEHOLDER_AREA ? BLANK_AREA : area;
+      }
+
+      function areaForRow(row) {
+        if (isMovieCategory(row.category)) {
+          return BLANK_AREA;
+        }
+        return row.area ?? BLANK_AREA;
       }
 
       function movieRowsNeedMigration(rows) {
-        return rows.some((row) => isMovieCategory(row.category) && row.area !== BLANK_AREA);
+        return rows.some(
+          (row) => isMovieCategory(row.category) && movieAreaNeedsMigration(row.area)
+        );
       }
 
       function normalizeMovieRows(rows) {
@@ -837,7 +868,7 @@
             continue;
           }
 
-          const area = isMovieCategory(row.category) ? BLANK_AREA : row.area;
+          const area = areaForRow(row);
           const key = `${row.name}\0${area}\0${row.category}`;
           const normalized = { ...row, area };
           const existing = byKey.get(key);
@@ -875,7 +906,7 @@
             }
 
             const targetArea = isMovieCategory(category) ? BLANK_AREA : areaName;
-            if (isMovieCategory(category) && areaName !== BLANK_AREA) {
+            if (isMovieCategory(category) && movieAreaNeedsMigration(areaName)) {
               changed = true;
             }
 
@@ -902,23 +933,53 @@
           return;
         }
 
-        const staleRows = rows.filter(
-          (row) => isMovieCategory(row.category) && row.area !== BLANK_AREA
-        );
-        if (staleRows.length === 0) {
+        const movieRows = rows.filter((row) => isMovieCategory(row.category));
+        if (movieRows.length === 0) {
           return;
         }
 
-        const blankByName = new Map();
-        for (const row of rows) {
-          if (isMovieCategory(row.category) && row.area === BLANK_AREA) {
-            blankByName.set(row.name, row);
+        const blankByKey = new Map();
+        for (const row of movieRows) {
+          if (!isBlankArea(row.area)) {
+            continue;
+          }
+          const key = `${row.name}\0${normalizeCategory(row.category)}`;
+          if (!blankByKey.has(key)) {
+            blankByKey.set(key, row);
           }
         }
 
-        for (const row of staleRows) {
-          const blank = blankByName.get(row.name);
-          if (blank) {
+        const staleByKey = new Map();
+        for (const row of movieRows) {
+          if (!movieAreaNeedsMigration(row.area)) {
+            continue;
+          }
+          const key = `${row.name}\0${normalizeCategory(row.category)}`;
+          if (!staleByKey.has(key)) {
+            staleByKey.set(key, []);
+          }
+          staleByKey.get(key).push(row);
+        }
+
+        for (const [key, staleRows] of staleByKey.entries()) {
+          if (blankByKey.has(key)) {
+            for (const row of staleRows) {
+              const { error } = await supabaseClient
+                .from("places")
+                .delete()
+                .eq("name", row.name)
+                .eq("area", row.area)
+                .eq("category", row.category);
+              if (error) {
+                throw error;
+              }
+            }
+            continue;
+          }
+
+          staleRows.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+          for (let index = 1; index < staleRows.length; index += 1) {
+            const row = staleRows[index];
             const { error } = await supabaseClient
               .from("places")
               .delete()
@@ -928,15 +989,15 @@
             if (error) {
               throw error;
             }
-            continue;
           }
 
+          const keeper = staleRows[0];
           const { error } = await supabaseClient
             .from("places")
             .update({ area: BLANK_AREA })
-            .eq("name", row.name)
-            .eq("area", row.area)
-            .eq("category", row.category);
+            .eq("name", keeper.name)
+            .eq("area", keeper.area)
+            .eq("category", keeper.category);
           if (error) {
             throw error;
           }
@@ -948,6 +1009,62 @@
           return [BLANK_AREA];
         }
         return areaNames;
+      }
+
+      function buildPlaceRows(areaNames, categoryNames, placeName, notes = "") {
+        const rows = [];
+        for (const category of categoryNames) {
+          for (const area of effectiveAreasForCategory(areaNames, category)) {
+            rows.push({
+              name: placeName,
+              area,
+              category,
+              active: true,
+              notes: notes || null,
+            });
+          }
+        }
+        return rows;
+      }
+
+      async function deleteStaleMovieAreas(placeName, categoryName) {
+        if (!supabaseClient || !isMovieCategory(categoryName)) {
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from("places")
+          .delete()
+          .eq("name", placeName)
+          .eq("category", categoryName)
+          .neq("area", BLANK_AREA);
+
+        if (error) {
+          throw error;
+        }
+      }
+
+      function removeMoviePlaceFromStaleAreas(placeName, categoryName) {
+        if (!isMovieCategory(categoryName)) {
+          return;
+        }
+
+        const areasToClear = new Set([...getAreas(), EVERYWHERE_AREA, PLACEHOLDER_AREA]);
+        for (const areaName of areasToClear) {
+          if (isBlankArea(areaName)) {
+            continue;
+          }
+          const places = namesByArea[areaName]?.[categoryName];
+          if (!places) {
+            continue;
+          }
+          const index = places.indexOf(placeName);
+          if (index !== -1) {
+            places.splice(index, 1);
+          }
+          clearPlaceActive(areaName, categoryName, placeName);
+          clearPlaceNotes(areaName, categoryName, placeName);
+        }
       }
       const supabaseConfig = window.PLACES_SUPABASE;
       const ALLOWED_EMAILS = (() => {
@@ -1289,18 +1406,19 @@
         resetPlaceStatus();
         const data = {};
         for (const row of rows) {
-          setPlaceActive(row.area, row.category, row.name, row.active !== false);
+          const area = areaForRow(row);
+          setPlaceActive(area, row.category, row.name, row.active !== false);
           if (row.notes) {
-            setPlaceNotes(row.area, row.category, row.name, row.notes);
+            setPlaceNotes(area, row.category, row.name, row.notes);
           }
-          if (!data[row.area]) {
-            data[row.area] = {};
+          if (!(area in data)) {
+            data[area] = {};
           }
-          if (!data[row.area][row.category]) {
-            data[row.area][row.category] = [];
+          if (!data[area][row.category]) {
+            data[area][row.category] = [];
           }
-          if (!data[row.area][row.category].includes(row.name)) {
-            data[row.area][row.category].push(row.name);
+          if (!data[area][row.category].includes(row.name)) {
+            data[area][row.category].push(row.name);
           }
         }
         return data;
@@ -1353,10 +1471,10 @@
       async function fetchPlacesRows() {
         let { data, error } = await supabaseClient
           .from("places")
-          .select("name, area, category, active, notes");
+          .select("id, name, area, category, active, notes");
 
         if (error) {
-          const retry = await supabaseClient.from("places").select("name, area, category");
+          const retry = await supabaseClient.from("places").select("id, name, area, category");
           data = retry.data?.map((row) => ({ ...row, active: true, notes: null })) ?? null;
           error = retry.error;
         }
@@ -1389,7 +1507,7 @@
               data = normalizeMovieRows(data);
             }
           }
-          return normalizeData(rowsToNamesByArea(data));
+          return normalizeData(rowsToNamesByArea(normalizeMovieRows(data)));
         }
 
         const local = loadLocalData();
@@ -1412,28 +1530,24 @@
       }
 
       async function persistAdds(areaNames, categoryNames, placeName, notes = "") {
+        for (const category of categoryNames) {
+          if (isMovieCategory(category)) {
+            await deleteStaleMovieAreas(placeName, category);
+          }
+        }
+
+        const rows = buildPlaceRows(areaNames, categoryNames, placeName, notes);
+
         if (!supabaseClient) {
-          for (const category of categoryNames) {
-            for (const area of effectiveAreasForCategory(areaNames, category)) {
-              setPlaceNotes(area, category, placeName, notes);
-            }
+          for (const row of rows) {
+            setPlaceNotes(row.area, row.category, placeName, notes);
           }
           return;
         }
 
-        const rows = [];
-        for (const category of categoryNames) {
-          for (const area of effectiveAreasForCategory(areaNames, category)) {
-            setPlaceActive(area, category, placeName, true);
-            setPlaceNotes(area, category, placeName, notes);
-            rows.push({
-              name: placeName,
-              area,
-              category,
-              active: true,
-              notes: notes || null,
-            });
-          }
+        for (const row of rows) {
+          setPlaceActive(row.area, row.category, placeName, true);
+          setPlaceNotes(row.area, row.category, placeName, notes);
         }
 
         const { error } = await supabaseClient.from("places").upsert(rows, {
@@ -1573,12 +1687,10 @@
         return value.charAt(0).toUpperCase() + value.slice(1);
       }
 
-      function normalizeCategory(value) {
-        return value.trim().toLowerCase();
-      }
-
       function getAreas() {
-        const areas = Object.keys(namesByArea).sort((a, b) => a.localeCompare(b));
+        const areas = Object.keys(namesByArea)
+          .filter((area) => area !== PLACEHOLDER_AREA)
+          .sort((a, b) => a.localeCompare(b));
         const everywhereIndex = areas.indexOf(EVERYWHERE_AREA);
         if (everywhereIndex > 0) {
           areas.splice(everywhereIndex, 1);
@@ -1665,7 +1777,7 @@
         if (isMovieCategory(category)) {
           return [BLANK_AREA];
         }
-        return areas.filter((area) => area !== BLANK_AREA);
+        return areas.filter((area) => !isBlankArea(area) && area !== PLACEHOLDER_AREA);
       }
 
       function syncAreaForCategory() {
@@ -1676,7 +1788,7 @@
         }
 
         areaSelect.disabled = false;
-        if (areaSelect.value === BLANK_AREA) {
+        if (areaSelect.value === BLANK_AREA || areaSelect.value === PLACEHOLDER_AREA) {
           const areas = getAreasForSelect(categorySelect.value);
           if (areas.length > 0) {
             areaSelect.value = areas[0];
@@ -1820,7 +1932,14 @@
         }
 
         addWizard.categories = categoryNames;
-        addWizard.areas = areaNames;
+        addWizard.areas = needsArea ? areaNames : [];
+
+        if (!needsArea) {
+          for (const input of addAreaList.querySelectorAll('input[type="checkbox"]')) {
+            input.checked = false;
+          }
+          addAreaNew.value = "";
+        }
 
         if (editPlace) {
           const existingNotes = getPlaceNotes(
@@ -1929,13 +2048,14 @@
             const active = categoryKeys.every((category) =>
               isPlaceActive(area, category, place)
             );
+            const displayArea = displayAreaForRow(area, categoryKeys);
             return {
               place,
-              area,
+              area: displayArea,
               categoryKeys,
               active,
               category: categoryKeys.map(formatLabel).join(", "),
-              notes: getPlaceNotes(area, categoryKeys[0], place),
+              notes: getPlaceNotes(displayArea, categoryKeys[0], place),
             };
           })
           .sort((a, b) => a.area.localeCompare(b.area) || a.place.localeCompare(b.place));
@@ -2203,6 +2323,7 @@
 
       async function addPlaces(areaNames, categoryNames, placeName, notes = "") {
         for (const categoryName of categoryNames) {
+          removeMoviePlaceFromStaleAreas(placeName, categoryName);
           for (const areaName of effectiveAreasForCategory(areaNames, categoryName)) {
             addPlaceToData(areaName, categoryName, placeName);
           }
@@ -2375,8 +2496,8 @@
 
         const placeName = addPlaceInput.value.trim();
         const categoryNames = resolveCategoriesForAdd();
-        const areaNames = resolveAreasForAdd();
         const needsArea = categoryNames.some((category) => !isMovieCategory(category));
+        const areaNames = needsArea ? resolveAreasForAdd() : [];
         const notes = addNotesInput.value.trim();
 
         if (!placeName) {
