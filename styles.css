@@ -834,14 +834,14 @@ img {
 }
 
 .woodworking-gallery-caption-meta {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   line-height: 1.4;
   margin-top: 0.15rem;
   opacity: 0.9;
 }
 
 .woodworking-gallery-caption-tags {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   line-height: 1.4;
   margin-top: 0.15rem;
   opacity: 0.9;
@@ -960,7 +960,7 @@ img {
 
 .portfolio-page .woodworking-lightbox-meta,
 .portfolio-page .woodworking-lightbox-tags {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   color: #555555;
 }
 
@@ -1014,6 +1014,11 @@ img {
   .portfolio-page .woodworking-lightbox-description {
     font-size: 0.92rem;
   }
+
+  .portfolio-page .woodworking-lightbox-meta,
+  .portfolio-page .woodworking-lightbox-tags {
+    font-size: 0.75rem;
+  }
 }
 
 @media (max-height: 500px) and (orientation: landscape) and (min-width: 821px) {
@@ -1041,6 +1046,11 @@ img {
   .portfolio-page .woodworking-lightbox-description {
     font-size: 0.85rem;
     line-height: 1.45;
+  }
+
+  .portfolio-page .woodworking-lightbox-meta,
+  .portfolio-page .woodworking-lightbox-tags {
+    font-size: 0.75rem;
   }
 
   .portfolio-page .woodworking-lightbox-content {
