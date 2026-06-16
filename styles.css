@@ -885,6 +885,169 @@ img {
   aspect-ratio: 1 / 1;
 }
 
+.portfolio-page .woodworking-gallery-caption-description {
+  display: none;
+}
+
+.portfolio-page .woodworking-lightbox[open] {
+  padding: 2rem;
+}
+
+.portfolio-page .woodworking-lightbox::backdrop {
+  background: rgba(17, 17, 17, 0.55);
+}
+
+.portfolio-page .woodworking-lightbox-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  width: min(95vw, 1200px);
+  max-width: min(95vw, 1200px);
+  max-height: calc(100vh - 4rem);
+  max-height: calc(100dvh - 4rem);
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(17, 17, 17, 0.18);
+  --lightbox-content-height: calc(100vh - 4rem - 4rem);
+  --lightbox-content-height: calc(100dvh - 4rem - 4rem);
+}
+
+.portfolio-page .woodworking-lightbox-media {
+  display: block;
+  width: min(100%, var(--lightbox-content-height));
+  aspect-ratio: 1 / 1;
+  align-self: start;
+  overflow: hidden;
+}
+
+.portfolio-page .woodworking-lightbox-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+}
+
+.portfolio-page .woodworking-lightbox-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 0;
+  max-height: var(--lightbox-content-height);
+  overflow-y: auto;
+  color: #111111;
+  text-align: left;
+}
+
+.portfolio-page .woodworking-lightbox-title {
+  margin: 0;
+  font-family: "Gowun Batang", serif;
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.portfolio-page .woodworking-lightbox-subtitle,
+.portfolio-page .woodworking-lightbox-meta,
+.portfolio-page .woodworking-lightbox-tags,
+.portfolio-page .woodworking-lightbox-description {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.portfolio-page .woodworking-lightbox-meta,
+.portfolio-page .woodworking-lightbox-tags {
+  font-size: 0.9rem;
+  color: #555555;
+}
+
+.portfolio-page .woodworking-lightbox-description {
+  margin-top: 0.5rem;
+  line-height: 1.75;
+}
+
+.portfolio-page .woodworking-lightbox-close {
+  color: #111111;
+}
+
+@media (max-width: 820px), (max-height: 500px) and (orientation: landscape) {
+  .portfolio-page .woodworking-lightbox[open] {
+    padding: max(1rem, env(safe-area-inset-top, 0px))
+      max(1rem, env(safe-area-inset-right, 0px))
+      max(1rem, env(safe-area-inset-bottom, 0px))
+      max(1rem, env(safe-area-inset-left, 0px));
+    overflow-y: auto;
+    align-items: flex-start;
+  }
+
+  .portfolio-page .woodworking-lightbox-inner {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    padding: 1.25rem;
+    --lightbox-content-height: min(
+      calc(100vw - 4.5rem),
+      calc(100vh - 13rem),
+      calc(100dvh - 13rem)
+    );
+  }
+
+  .portfolio-page .woodworking-lightbox-media {
+    width: min(100%, var(--lightbox-content-height));
+  }
+
+  .portfolio-page .woodworking-lightbox-content {
+    max-height: none;
+  }
+
+  .portfolio-page .woodworking-lightbox-title {
+    font-size: clamp(1.15rem, 4.5vw, 1.5rem);
+  }
+
+  .portfolio-page .woodworking-lightbox-subtitle,
+  .portfolio-page .woodworking-lightbox-meta,
+  .portfolio-page .woodworking-lightbox-tags,
+  .portfolio-page .woodworking-lightbox-description {
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) and (min-width: 821px) {
+  .portfolio-page .woodworking-lightbox[open] {
+    padding: max(0.75rem, env(safe-area-inset-top, 0px))
+      max(0.75rem, env(safe-area-inset-right, 0px))
+      max(0.75rem, env(safe-area-inset-bottom, 0px))
+      max(0.75rem, env(safe-area-inset-left, 0px));
+    overflow-y: auto;
+    align-items: flex-start;
+  }
+
+  .portfolio-page .woodworking-lightbox-inner {
+    padding: 1rem;
+    --lightbox-content-height: min(calc(100vh - 6rem), calc(100dvh - 6rem));
+  }
+
+  .portfolio-page .woodworking-lightbox-title {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+  }
+
+  .portfolio-page .woodworking-lightbox-subtitle,
+  .portfolio-page .woodworking-lightbox-meta,
+  .portfolio-page .woodworking-lightbox-tags,
+  .portfolio-page .woodworking-lightbox-description {
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  .portfolio-page .woodworking-lightbox-content {
+    gap: 0.4rem;
+  }
+}
+
 .woodworking-gallery img:focus-visible,
 .woodworking-gallery-item img:focus-visible {
   outline: 2px solid #111111;
