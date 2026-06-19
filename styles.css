@@ -617,9 +617,8 @@ img {
 
 .category-card-image {
   width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  object-position: center;
+  height: auto;
+  display: block;
 }
 
 .category-card-image-frame {
