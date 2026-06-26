@@ -1,0 +1,25 @@
+name: Keep Supabase alive
+
+# Free-tier Supabase projects pause after ~7 days with no API activity.
+# A lightweight health ping resets the inactivity timer (officially supported).
+on:
+  schedule:
+    # Mon + Thu at 12:00 UTC — well under the 7-day threshold
+    - cron: "0 12 * * 1,4"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase health endpoint
+        run: |
+          response=$(curl -s -o /tmp/body -w "%{http_code}" \
+            "${{ secrets.PLACES_SUPABASE_URL }}/auth/v1/health" \
+            -H "apikey: ${{ secrets.PLACES_SUPABASE_ANON_KEY }}")
+          echo "HTTP $response"
+          cat /tmp/body
+          if [ "$response" != "200" ]; then
+            echo "Unexpected response from Supabase health check"
+            exit 1
+          fi
