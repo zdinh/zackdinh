@@ -1226,6 +1226,12 @@ body.woodworking-lightbox-scroll-lock {
   line-height: 1.8;
 }
 
+.woodworking-detail-page .woodworking-lightbox-description .woodworking-photo-credit,
+.woodworking-detail-page .woodworking-lightbox-description .woodworking-photo-credit a {
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .woodworking-detail-page .woodworking-lightbox-meta,
 .woodworking-detail-page .woodworking-lightbox-tags {
   display: none;
@@ -1462,18 +1468,6 @@ body.woodworking-lightbox-scroll-lock {
   .woodworking-detail-page .woodworking-lightbox-carousel {
     max-width: min(34vw, 200px);
     margin: 0;
-  }
-
-  .woodworking-detail-page .woodworking-lightbox-title {
-    margin-bottom: 0.75rem;
-    font-size: clamp(1rem, 2.8vw, 1.35rem);
-  }
-
-  .woodworking-detail-page .woodworking-lightbox-subtitle,
-  .woodworking-detail-page .woodworking-lightbox-description {
-    margin-bottom: 0.75rem;
-    font-size: 0.85rem;
-    line-height: 1.5;
   }
 }
 
