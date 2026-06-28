@@ -276,12 +276,14 @@
     dialog.addEventListener("scroll", updateProjectNavPosition);
   }
 
-  const mobileLightboxQuery = window.matchMedia("(max-width: 720px)");
+  const compactLightboxQuery = window.matchMedia(
+    "(max-width: 820px), (max-height: 500px) and (orientation: landscape)"
+  );
 
   function updateProjectNavPosition() {
     if (!lightboxCarousel || !projectPrevButton || !projectNextButton || !dialog.open) return;
 
-    if (mobileLightboxQuery.matches) {
+    if (compactLightboxQuery.matches) {
       resetProjectNavPosition();
       return;
     }
