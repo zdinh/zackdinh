@@ -1383,11 +1383,67 @@ body.woodworking-lightbox-scroll-lock {
 }
 
 @media (max-width: 720px) {
+  .woodworking-detail-page .woodworking-lightbox[open] {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "nav-prev close nav-next"
+      "content content content";
+    gap: 0.5rem 0.75rem;
+    align-content: start;
+    align-items: center;
+    justify-items: stretch;
+    padding: max(0.75rem, env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right))
+      max(1.5rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 0;
+  }
+
+  .woodworking-detail-page .woodworking-lightbox-close {
+    grid-area: close;
+    position: static;
+    top: auto;
+    right: auto;
+    justify-self: center;
+    align-self: center;
+  }
+
+  .woodworking-detail-page .woodworking-lightbox[open] .woodworking-lightbox-project-control {
+    position: static;
+    transform: none;
+    opacity: 1;
+    align-self: center;
+  }
+
+  .woodworking-detail-page .woodworking-lightbox-project-control--prev {
+    grid-area: nav-prev;
+    justify-self: start;
+  }
+
+  .woodworking-detail-page .woodworking-lightbox-project-control--next {
+    grid-area: nav-next;
+    justify-self: end;
+  }
+
   .woodworking-detail-page .woodworking-lightbox-inner {
+    grid-area: content;
     grid-template-columns: 1fr;
     gap: 2rem;
-    width: calc(100% - 2.5rem);
-    padding: 6rem 0 3rem;
+    width: 100%;
+    min-height: auto;
+    padding: 0.75rem 0 0;
+  }
+
+  .woodworking-detail-page .woodworking-lightbox-carousel {
+    max-width: none;
+    margin: 0 auto;
   }
 }
 

@@ -276,8 +276,15 @@
     dialog.addEventListener("scroll", updateProjectNavPosition);
   }
 
+  const mobileLightboxQuery = window.matchMedia("(max-width: 720px)");
+
   function updateProjectNavPosition() {
     if (!lightboxCarousel || !projectPrevButton || !projectNextButton || !dialog.open) return;
+
+    if (mobileLightboxQuery.matches) {
+      resetProjectNavPosition();
+      return;
+    }
 
     const { top, height } = lightboxCarousel.getBoundingClientRect();
     const centerY = top + height / 2;
