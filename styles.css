@@ -892,12 +892,20 @@ img {
   grid-area: 1 / 1;
 }
 
-.woodworking-gallery-link {
+.woodworking-gallery-link,
+.woodworking-gallery-trigger {
   display: block;
   width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: inherit;
+  color: inherit;
 }
 
-.woodworking-gallery-link img {
+.woodworking-gallery-link img,
+.woodworking-gallery-trigger img {
   cursor: pointer;
 }
 
@@ -985,7 +993,8 @@ img {
   aspect-ratio: 1 / 1;
 }
 
-.portfolio-page .woodworking-gallery-caption-description {
+.portfolio-page .woodworking-gallery-caption-description,
+.woodworking-detail-page .woodworking-gallery-caption-description {
   display: none;
 }
 
@@ -1015,6 +1024,7 @@ img {
 }
 
 .portfolio-page .woodworking-lightbox-media {
+  position: relative;
   display: block;
   width: min(100%, var(--lightbox-content-height));
   aspect-ratio: 1 / 1;
@@ -1069,8 +1079,192 @@ img {
   line-height: 1.75;
 }
 
+.portfolio-page .woodworking-lightbox-description a {
+  color: inherit;
+}
+
 .portfolio-page .woodworking-lightbox-close {
   color: #111111;
+}
+
+.woodworking-detail-page .woodworking-lightbox[open] {
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
+  background: #ffffff;
+  overflow: auto;
+}
+
+.woodworking-detail-page .woodworking-lightbox::backdrop {
+  background: #ffffff;
+}
+
+.woodworking-detail-page .woodworking-lightbox-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+  gap: 4rem;
+  align-items: center;
+  width: min(980px, calc(100% - 3rem));
+  min-height: 100svh;
+  max-width: none;
+  max-height: none;
+  margin: 0 auto;
+  padding: 6rem 0 3rem;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.woodworking-detail-page .woodworking-lightbox-close {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111111;
+  font-size: 1.5rem;
+  line-height: 1;
+  outline: none;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.woodworking-detail-page .woodworking-lightbox-close:hover {
+  opacity: 1;
+  background: #f5f5f5;
+}
+
+.woodworking-detail-page .woodworking-lightbox-close:focus,
+.woodworking-detail-page .woodworking-lightbox-close:focus-visible,
+.woodworking-detail-page .woodworking-lightbox-close:active {
+  opacity: 1;
+  outline: none;
+  box-shadow: none;
+}
+
+.woodworking-detail-page .woodworking-lightbox-carousel {
+  width: 100%;
+  max-width: 360px;
+}
+
+.woodworking-detail-page .woodworking-lightbox-image--portrait {
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 3 / 4;
+  height: auto;
+  object-fit: cover;
+}
+
+.woodworking-detail-page .woodworking-lightbox-image--landscape {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.woodworking-detail-page .woodworking-lightbox-content {
+  display: block;
+  max-height: none;
+  overflow: visible;
+  color: #111111;
+  text-align: left;
+}
+
+.woodworking-detail-page .woodworking-lightbox-title {
+  font-family: "Gowun Batang", serif;
+  margin: 0 0 1.5rem;
+  font-size: clamp(1.25rem, 3vw, 2.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+}
+
+.woodworking-detail-page .woodworking-lightbox-subtitle,
+.woodworking-detail-page .woodworking-lightbox-description {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.woodworking-detail-page .woodworking-lightbox-meta,
+.woodworking-detail-page .woodworking-lightbox-tags {
+  display: none;
+}
+
+.woodworking-detail-page .woodworking-lightbox-description a {
+  color: #6c6c6c;
+}
+
+.woodworking-lightbox-project-control {
+  position: fixed;
+  top: 50%;
+  z-index: 2;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111111;
+  font-family: inherit;
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  outline: none;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateY(-50%);
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.woodworking-detail-page .woodworking-lightbox[open] .woodworking-lightbox-project-control {
+  display: flex;
+}
+
+.woodworking-detail-page .woodworking-lightbox[open]:hover .woodworking-lightbox-project-control,
+.woodworking-detail-page .woodworking-lightbox[open]:focus-within .woodworking-lightbox-project-control {
+  opacity: 1;
+}
+
+.woodworking-lightbox-project-control--prev {
+  left: max(1rem, env(safe-area-inset-left, 0px));
+}
+
+.woodworking-lightbox-project-control--next {
+  right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.woodworking-lightbox-project-control:hover {
+  background: #f5f5f5;
+}
+
+.woodworking-lightbox-project-control:focus,
+.woodworking-lightbox-project-control:focus-visible,
+.woodworking-lightbox-project-control:active {
+  opacity: 1;
+  outline: none;
+  box-shadow: none;
+}
+
+@media (hover: none) {
+  .woodworking-detail-page .woodworking-lightbox[open] .woodworking-lightbox-project-control {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 820px), (max-height: 500px) and (orientation: landscape) {
@@ -1155,6 +1349,15 @@ img {
 
   .portfolio-page .woodworking-lightbox-content {
     gap: 0.4rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .woodworking-detail-page .woodworking-lightbox-inner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    width: calc(100% - 2.5rem);
+    padding: 6rem 0 3rem;
   }
 }
 
@@ -1293,6 +1496,11 @@ img {
   }
 }
 
+.woodworking-gallery-trigger:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 3px;
+}
+
 .woodworking-copy {
   max-width: 760px;
   margin: 1.5rem auto 0;
@@ -1315,6 +1523,8 @@ img {
 }
 
 .woodworking-order-link {
+  display: block;
+  margin-top: 1.25rem;
   margin-bottom: 0;
 }
 
