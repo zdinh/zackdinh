@@ -6,7 +6,7 @@
     <title>Wooden Purse | Zack Dinh</title>
     <meta
       name="description"
-      content="Handcrafted wooden purse by Zack Dinh."
+      content="Handcrafted wooden purse made of bookmatched black walnut by Zack Dinh."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,9 +14,9 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260601-3" />
+    <link rel="stylesheet" href="styles.css?v=20260627-2" />
   </head>
-  <body class="woodworking-page">
+  <body class="about-page">
     <header class="site-header site-header-light">
       <div class="site-header-brand-group">
         <a class="site-brand" href="/index.html">Zack Dinh</a>
@@ -38,38 +38,68 @@
       </details>
     </header>
 
-    <main class="woodworking-layout">
-      <section class="woodworking-hero">
+    <main class="about-layout">
+      <section class="about-image-column">
+        <div class="image-carousel" data-image-carousel aria-label="Wooden purse images">
+          <div class="image-carousel-slides">
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/purse/haison-woodpurse-itlaphoto.com-9462.jpg"
+              alt="Wooden purse close-up"
+            />
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/purse/haison-woodpurse-itlaphoto.com-9456.jpg"
+              alt="Wooden purse front view"
+              hidden
+            />
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/purse/haison-woodpurse-itlaphoto.com-9452.jpg"
+              alt="Wooden purse angled view"
+              hidden
+            />
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/purse/haison-woodpurse-itlaphoto.com-9449.jpg"
+              alt="Wooden purse side view"
+              hidden
+            />
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/purse/haison-woodpurse-itlaphoto.com-9445.jpg"
+              alt="Wooden purse detail"
+              hidden
+            />
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/purse/haison-woodpurse-itlaphoto.com-9451.jpg"
+              alt="Wooden purse open view"
+              hidden
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="about-copy-column" aria-label="Wooden Purse">
         <h1>Wooden Purse</h1>
-      </section>
-
-      <section class="woodworking-gallery" aria-label="Wooden purse gallery">
-        <img src="assets/haison-woodpurse-itlaphoto.com-9456.jpg" alt="Wooden purse front view" />
-        <img src="assets/haison-woodpurse-itlaphoto.com-9452.jpg" alt="Wooden purse angled view" />
-        <img src="assets/haison-woodpurse-itlaphoto.com-9462.jpg" alt="Wooden purse close-up" />
-        <img src="assets/haison-woodpurse-itlaphoto.com-9449.jpg" alt="Wooden purse side view" />
-        <img src="assets/haison-woodpurse-itlaphoto.com-9445.jpg" alt="Wooden purse detail" />
-        <img src="assets/haison-woodpurse-itlaphoto.com-9451.jpg" alt="Wooden purse open view" />
-      </section>
-
-      <section class="woodworking-copy">
         <p>
           Handcrafted wooden purse made of bookmatched black walnut, featuring rattan
           panels and magnetic closure. Dimensions: 7.5" x 6.75" x 1.5"
         </p>
-        <p class="woodworking-order-link"><a class="publication-link publication-link-no-arrow" href="/contact.html">Email to order</a></p>
+        <p><a class="publication-link publication-link-no-arrow" href="/contact.html">Email to order</a></p>
         <p class="woodworking-photo-credit">
           <a href="https://itlaphoto.com/" target="_blank" rel="noreferrer">Photographs by ITLA</a>
         </p>
       </section>
     </main>
 
-    <dialog class="woodworking-lightbox" aria-label="Enlarged image">
-      <div class="woodworking-lightbox-inner">
-        <button type="button" class="woodworking-lightbox-close" aria-label="Close">&times;</button>
-        <img class="woodworking-lightbox-image" alt="" />
+    <dialog class="image-lightbox" aria-label="Enlarged image">
+      <div class="image-lightbox-inner">
+        <button type="button" class="image-lightbox-close" aria-label="Close">&times;</button>
+        <img class="image-lightbox-image" alt="" />
       </div>
     </dialog>
-    <script src="woodworking-lightbox.js" defer></script>
+    <script src="image-carousel.js" defer></script>
   </body>
 </html>

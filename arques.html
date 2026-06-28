@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260609-8" />
+    <link rel="stylesheet" href="styles.css?v=20260627-2" />
   </head>
   <body class="about-page">
     <header class="site-header site-header-light">
@@ -40,14 +40,18 @@
 
     <main class="about-layout">
       <section class="about-image-column">
-        <img
-          class="about-image"
-          src="assets/2025-02-11+12.06.18.jpg"
-          alt="Traditional boatbuilding at the Arques School"
-        />
+        <div class="image-carousel" data-image-carousel aria-label="Arques School images">
+          <div class="image-carousel-slides">
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/2025-02-11+12.06.18.jpg"
+              alt="Traditional boatbuilding at the Arques School"
+            />
+          </div>
+        </div>
       </section>
 
-      <section class="about-copy-column arques-copy-column" aria-label="Arques School">
+      <section class="about-copy-column" aria-label="Arques School">
         <h1>Arques School</h1>
         <p>
           In the summer of 2025 I received instruction in traditional boatbuilding at the Arques
@@ -67,5 +71,13 @@
         </p>
       </section>
     </main>
+
+    <dialog class="image-lightbox" aria-label="Enlarged image">
+      <div class="image-lightbox-inner">
+        <button type="button" class="image-lightbox-close" aria-label="Close">&times;</button>
+        <img class="image-lightbox-image" alt="" />
+      </div>
+    </dialog>
+    <script src="image-carousel.js" defer></script>
   </body>
 </html>
