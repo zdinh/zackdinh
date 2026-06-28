@@ -178,7 +178,14 @@
 
     zoomDialog.append(zoomPrevButton, zoomNextButton);
 
-    lightboxImg.addEventListener("click", () => openZoomLightbox());
+    lightboxImg.addEventListener("click", () => {
+      if (suppressImageClick) {
+        suppressImageClick = false;
+        return;
+      }
+
+      openZoomLightbox();
+    });
 
     zoomCloseBtn?.addEventListener("click", () => zoomDialog.close());
 
@@ -211,6 +218,72 @@
 
     slideIndex = (nextIndex + slides.length) % slides.length;
     updateLightboxImage();
+  }
+
+  let suppressImageClick = false;
+
+  function bindHorizontalSwipe(element, onPrev, onNext) {
+    if (!element) return;
+
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+
+    element.addEventListener(
+      "touchstart",
+      (event) => {
+        if (event.touches.length !== 1) return;
+
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+        tracking = true;
+      },
+      { passive: true }
+    );
+
+    element.addEventListener(
+      "touchend",
+      (event) => {
+        if (!tracking) return;
+
+        tracking = false;
+        if (slides.length < 2) return;
+
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        const threshold = 48;
+
+        if (Math.abs(deltaX) < threshold || Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+        suppressImageClick = true;
+        if (deltaX < 0) onNext();
+        else onPrev();
+      },
+      { passive: true }
+    );
+
+    element.addEventListener(
+      "touchcancel",
+      () => {
+        tracking = false;
+      },
+      { passive: true }
+    );
+  }
+
+  function initImageSwipe() {
+    bindHorizontalSwipe(
+      lightboxCarousel,
+      () => showSlide(slideIndex - 1),
+      () => showSlide(slideIndex + 1)
+    );
+
+    bindHorizontalSwipe(
+      zoomDialog,
+      () => showSlide(slideIndex - 1),
+      () => showSlide(slideIndex + 1)
+    );
   }
 
   function initCarouselControls() {
@@ -483,4 +556,5 @@
 
   openFromHash();
   initZoomLightbox();
+  initImageSwipe();
 })();
