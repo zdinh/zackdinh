@@ -1104,7 +1104,7 @@ img {
   display: grid;
   grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
   gap: 4rem;
-  align-items: center;
+  align-items: start;
   width: min(980px, calc(100% - 3rem));
   min-height: 100svh;
   max-width: none;
@@ -1118,6 +1118,7 @@ img {
 
 .woodworking-detail-page .woodworking-lightbox-close {
   position: fixed;
+  top: max(6rem, calc(env(safe-area-inset-top, 0px) + 1.5rem));
   right: max(1rem, env(safe-area-inset-right, 0px));
   z-index: 2;
   display: flex;
@@ -1152,13 +1153,38 @@ img {
 }
 
 .woodworking-detail-page .woodworking-lightbox-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   max-width: 360px;
+  aspect-ratio: 3 / 4;
+}
+
+.woodworking-detail-page .woodworking-lightbox-carousel .woodworking-lightbox-image {
+  cursor: pointer;
+}
+
+.woodworking-detail-page .woodworking-lightbox-carousel .image-carousel-slides {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.woodworking-detail-page .woodworking-lightbox-image {
+  width: 100%;
+  max-width: 360px;
+  max-height: 100%;
+  height: auto;
 }
 
 .woodworking-detail-page .woodworking-lightbox-image--portrait {
   width: 100%;
   max-width: 360px;
+  max-height: 100%;
   aspect-ratio: 3 / 4;
   height: auto;
   object-fit: cover;
@@ -1167,6 +1193,7 @@ img {
 .woodworking-detail-page .woodworking-lightbox-image--landscape {
   width: 100%;
   max-width: 360px;
+  max-height: 100%;
   height: auto;
   aspect-ratio: auto;
   object-fit: contain;
@@ -1206,7 +1233,6 @@ img {
 
 .woodworking-lightbox-project-control {
   position: fixed;
-  top: 50%;
   z-index: 2;
   display: none;
   align-items: center;

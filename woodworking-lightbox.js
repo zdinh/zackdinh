@@ -5,10 +5,11 @@
 
   const lightboxCarousel = dialog.querySelector(".woodworking-lightbox-carousel");
   const lightboxImg = dialog.querySelector(".woodworking-lightbox-image");
-  const imageColumn = dialog.querySelector(".about-image-column");
   const lightboxContent = dialog.querySelector(".woodworking-lightbox-content");
   const closeBtn = dialog.querySelector(".woodworking-lightbox-close");
-  const isDetailPage = document.body.classList.contains("woodworking-detail-page");
+  const zoomDialog = document.querySelector(".image-lightbox");
+  const zoomImg = zoomDialog?.querySelector(".image-lightbox-image");
+  const zoomCloseBtn = zoomDialog?.querySelector(".image-lightbox-close");
 
   const detailFields = lightboxContent
     ? [
@@ -102,44 +103,107 @@
     return extras;
   }
 
-  function updateClosePosition() {
-    if (!isDetailPage || !closeBtn || !imageColumn || !dialog.open) return;
+  function setImageOrientation(img, source) {
+    const reference = source?.naturalWidth ? source : img;
+    const isPortrait =
+      reference.naturalWidth && reference.naturalHeight
+        ? reference.naturalHeight > reference.naturalWidth
+        : true;
 
-    const { top } = imageColumn.getBoundingClientRect();
-    closeBtn.style.top = `${top}px`;
-  }
-
-  function resetClosePosition() {
-    if (closeBtn) closeBtn.style.top = "";
-  }
-
-  function applyImageOrientation(img) {
-    function update() {
-      const isPortrait = img.naturalHeight > img.naturalWidth;
-      img.classList.toggle("woodworking-lightbox-image--portrait", isPortrait);
-      img.classList.toggle("woodworking-lightbox-image--landscape", !isPortrait);
-      updateClosePosition();
-    }
-
-    if (img.complete && img.naturalWidth) {
-      update();
-      return;
-    }
-
-    img.addEventListener("load", update, { once: true });
+    img.classList.toggle("woodworking-lightbox-image--portrait", isPortrait);
+    img.classList.toggle("woodworking-lightbox-image--landscape", !isPortrait);
   }
 
   function updateLightboxImage() {
     const slide = slides[slideIndex];
     if (!slide) return;
 
-    lightboxImg.classList.remove(
-      "woodworking-lightbox-image--portrait",
-      "woodworking-lightbox-image--landscape"
-    );
+    setImageOrientation(lightboxImg, slide);
     lightboxImg.src = slide.currentSrc || slide.src;
     lightboxImg.alt = slide.alt;
-    applyImageOrientation(lightboxImg);
+
+    if (!slide.naturalWidth) {
+      lightboxImg.addEventListener(
+        "load",
+        () => setImageOrientation(lightboxImg, lightboxImg),
+        { once: true }
+      );
+    }
+
+    if (zoomDialog?.open) updateZoomImage();
+  }
+
+  function updateZoomImage() {
+    const slide = slides[slideIndex];
+    if (!slide || !zoomImg) return;
+
+    zoomImg.src = slide.currentSrc || slide.src;
+    zoomImg.alt = slide.alt;
+  }
+
+  function openZoomLightbox() {
+    if (!zoomDialog || !lightboxImg.src || !slides.length) return;
+
+    updateZoomImage();
+    zoomDialog.classList.toggle("image-lightbox--multiple", slides.length > 1);
+    zoomDialog.showModal();
+  }
+
+  function initZoomLightbox() {
+    if (!zoomDialog || !zoomImg || !lightboxImg || zoomDialog.dataset.zoomInit === "true") return;
+
+    zoomDialog.dataset.zoomInit = "true";
+
+    const zoomPrevButton = document.createElement("button");
+    zoomPrevButton.type = "button";
+    zoomPrevButton.className = "image-lightbox-control image-lightbox-control--prev";
+    zoomPrevButton.setAttribute("aria-label", "Previous image");
+    zoomPrevButton.innerHTML = "&#8249;";
+
+    const zoomNextButton = document.createElement("button");
+    zoomNextButton.type = "button";
+    zoomNextButton.className = "image-lightbox-control image-lightbox-control--next";
+    zoomNextButton.setAttribute("aria-label", "Next image");
+    zoomNextButton.innerHTML = "&#8250;";
+
+    zoomPrevButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      showSlide(slideIndex - 1);
+    });
+
+    zoomNextButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      showSlide(slideIndex + 1);
+    });
+
+    zoomDialog.append(zoomPrevButton, zoomNextButton);
+
+    lightboxImg.addEventListener("click", () => openZoomLightbox());
+
+    zoomCloseBtn?.addEventListener("click", () => zoomDialog.close());
+
+    zoomDialog.addEventListener("click", (event) => {
+      if (event.target === zoomDialog) zoomDialog.close();
+    });
+
+    zoomDialog.addEventListener("keydown", (event) => {
+      if (!zoomDialog.open || slides.length < 2) return;
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        showSlide(slideIndex - 1);
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        showSlide(slideIndex + 1);
+      }
+    });
+
+    zoomDialog.addEventListener("close", () => {
+      zoomDialog.classList.remove("image-lightbox--multiple");
+      zoomImg.removeAttribute("src");
+    });
   }
 
   function showSlide(nextIndex) {
@@ -209,6 +273,21 @@
     });
 
     dialog.append(projectPrevButton, projectNextButton);
+    dialog.addEventListener("scroll", updateProjectNavPosition);
+  }
+
+  function updateProjectNavPosition() {
+    if (!lightboxCarousel || !projectPrevButton || !projectNextButton || !dialog.open) return;
+
+    const { top, height } = lightboxCarousel.getBoundingClientRect();
+    const centerY = top + height / 2;
+    projectPrevButton.style.top = `${centerY}px`;
+    projectNextButton.style.top = `${centerY}px`;
+  }
+
+  function resetProjectNavPosition() {
+    if (projectPrevButton) projectPrevButton.style.top = "";
+    if (projectNextButton) projectNextButton.style.top = "";
   }
 
   function getProjectIndex(projectId) {
@@ -239,6 +318,8 @@
     const projectId = figure.id;
     if (!projectId) return;
 
+    if (zoomDialog?.open) zoomDialog.close();
+
     slides = getSlidesFromFigure(figure);
     if (!slides.length) return;
 
@@ -255,7 +336,7 @@
     if (updateHash) setHash(projectId);
 
     requestAnimationFrame(() => {
-      requestAnimationFrame(updateClosePosition);
+      requestAnimationFrame(updateProjectNavPosition);
     });
   }
 
@@ -308,7 +389,7 @@
   });
 
   dialog.addEventListener("keydown", (event) => {
-    if (!dialog.open) return;
+    if (!dialog.open || zoomDialog?.open) return;
 
     if (event.key === "ArrowLeft" && slides.length > 1) {
       event.preventDefault();
@@ -334,9 +415,10 @@
     }
   });
 
-  window.addEventListener("resize", updateClosePosition);
+  window.addEventListener("resize", updateProjectNavPosition);
 
   dialog.addEventListener("close", () => {
+    if (zoomDialog?.open) zoomDialog.close();
     if (currentProjectId) setHash(null);
     currentProjectId = null;
     slides = [];
@@ -347,7 +429,7 @@
       "woodworking-lightbox-image--landscape"
     );
     lightboxCarousel?.classList.remove("image-carousel--multiple");
-    resetClosePosition();
+    resetProjectNavPosition();
     clearDetails();
   });
 
@@ -378,4 +460,5 @@
   });
 
   openFromHash();
+  initZoomLightbox();
 })();
