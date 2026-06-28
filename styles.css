@@ -451,8 +451,7 @@ img {
   right: 0.75rem;
 }
 
-.image-carousel--multiple:hover .image-carousel-control,
-.image-carousel--multiple:focus-within .image-carousel-control {
+.image-carousel--multiple .image-carousel-control {
   opacity: 1;
 }
 
@@ -1581,15 +1580,6 @@ body.woodworking-lightbox-scroll-lock {
   right: 1.5rem;
 }
 
-.image-lightbox--multiple .image-lightbox-control {
-  display: flex;
-}
-
-.image-lightbox--multiple:hover .image-lightbox-control,
-.image-lightbox--multiple:focus-within .image-lightbox-control {
-  opacity: 1;
-}
-
 .image-lightbox-control:hover {
   background: rgba(17, 17, 17, 0.75);
 }
@@ -1598,12 +1588,6 @@ body.woodworking-lightbox-scroll-lock {
   opacity: 1;
   outline: 2px solid #ffffff;
   outline-offset: 2px;
-}
-
-@media (hover: none) {
-  .image-lightbox--multiple .image-lightbox-control {
-    opacity: 1;
-  }
 }
 
 .woodworking-gallery-trigger:focus-visible {
