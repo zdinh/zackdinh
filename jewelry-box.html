@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jewelry Box | Zack Dinh</title>
+    <meta
+      name="description"
+      content="Splined corners, removable tray, wind-up music box mechanism. Black walnut jewelry box by Zack Dinh."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260627-2" />
+  </head>
+  <body class="about-page">
+    <header class="site-header site-header-light">
+      <div class="site-header-brand-group">
+        <a class="site-brand" href="/index.html">Zack Dinh</a>
+        <a class="site-header-back-link" href="/woodworking.html">&lt; Back</a>
+      </div>
+
+      <details class="site-menu">
+        <summary class="site-menu-toggle" aria-label="Open navigation menu">
+          <span></span>
+          <span></span>
+        </summary>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/about.html">About</a>
+          <a href="/geography.html">Geography</a>
+          <a href="/woodworking.html" aria-current="page">Woodworking</a>
+          <a href="/other.html">Other</a>
+          <a href="/contact.html">Contact</a>
+        </nav>
+      </details>
+    </header>
+
+    <main class="about-layout">
+      <section class="about-image-column">
+        <div class="image-carousel" data-image-carousel aria-label="Jewelry box images">
+          <div class="image-carousel-slides">
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/jewelry-box.jpg"
+              alt="Black walnut jewelry box"
+            />
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/walnut-box/2026-06-23%2017.42.26.jpg"
+              alt="Jewelry box photo"
+              hidden
+            />
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/walnut-box/2026-06-23%2017.45.23.jpg"
+              alt="Jewelry box photo"
+              hidden
+            />
+            <img
+              class="about-image image-carousel-slide"
+              src="assets/walnut-box/2026-06-23%2017.46.09.jpg"
+              alt="Jewelry box photo"
+              hidden
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="about-copy-column" aria-label="Jewelry Box">
+        <h1>Jewelry Box</h1>
+        <p>Splined corners, removable tray, wind-up music box mechanism. Black walnut.</p>
+      </section>
+    </main>
+
+    <dialog class="image-lightbox" aria-label="Enlarged image">
+      <div class="image-lightbox-inner">
+        <button type="button" class="image-lightbox-close" aria-label="Close">&times;</button>
+        <img class="image-lightbox-image" alt="" />
+      </div>
+    </dialog>
+    <script src="image-carousel.js" defer></script>
+  </body>
+</html>
