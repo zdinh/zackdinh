@@ -203,9 +203,18 @@ img {
   margin: 0;
   color: #ffffff;
   font-family: "Gowun Batang", serif;
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.7;
   text-shadow: 0 1px 20px rgba(0, 0, 0, 0.35);
+}
+
+.hero-caption a {
+  color: inherit;
+}
+
+.hero-caption a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
 }
 
 @media (max-width: 720px) {
@@ -285,6 +294,25 @@ img {
   text-align: left;
 }
 
+.contact-email-address {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #111111;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.contact-email-address:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
 .contact-links {
   display: flex;
   gap: 0.9rem;
@@ -322,8 +350,8 @@ img {
 
 .contact-copy-status {
   position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
+  left: 50%;
+  top: 50%;
   z-index: 20;
   margin: 0;
   padding: 0.7rem 0.95rem;
@@ -334,7 +362,7 @@ img {
   line-height: 1.2;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
   opacity: 0;
-  transform: translateY(0.4rem);
+  transform: translate(-50%, calc(-50% + 0.4rem));
   pointer-events: none;
   transition:
     opacity 150ms ease,
@@ -343,7 +371,7 @@ img {
 
 .contact-copy-status-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate(-50%, -50%);
 }
 
 .about-layout {
