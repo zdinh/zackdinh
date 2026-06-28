@@ -1092,7 +1092,11 @@ img {
   align-items: stretch;
   justify-content: stretch;
   background: #ffffff;
-  overflow: auto;
+  overflow: hidden;
+}
+
+body.woodworking-lightbox-scroll-lock {
+  overflow: hidden;
 }
 
 .woodworking-detail-page .woodworking-lightbox::backdrop {

@@ -304,6 +304,14 @@
     openProject(nextFigure);
   }
 
+  function lockScroll() {
+    document.body.classList.add("woodworking-lightbox-scroll-lock");
+  }
+
+  function unlockScroll() {
+    document.body.classList.remove("woodworking-lightbox-scroll-lock");
+  }
+
   function setHash(projectId) {
     const nextUrl = projectId
       ? `${window.location.pathname}${window.location.search}#${projectId}`
@@ -332,7 +340,10 @@
     lightboxCarousel?.classList.toggle("image-carousel--multiple", slides.length > 1);
     currentProjectId = projectId;
 
-    if (!dialog.open) dialog.showModal();
+    if (!dialog.open) {
+      dialog.showModal();
+      lockScroll();
+    }
     if (updateHash) setHash(projectId);
 
     requestAnimationFrame(() => {
@@ -349,6 +360,7 @@
     lightboxCarousel?.classList.remove("image-carousel--multiple");
     currentProjectId = null;
     dialog.showModal();
+    lockScroll();
   }
 
   function closeLightbox() {
@@ -418,6 +430,7 @@
   window.addEventListener("resize", updateProjectNavPosition);
 
   dialog.addEventListener("close", () => {
+    unlockScroll();
     if (zoomDialog?.open) zoomDialog.close();
     if (currentProjectId) setHash(null);
     currentProjectId = null;
