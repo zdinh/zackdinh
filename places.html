@@ -210,6 +210,14 @@
         display: none;
       }
 
+      .add-field-label {
+        display: none;
+        margin: 0 0 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #555;
+      }
+
       .add-field {
         display: flex;
         flex-direction: column;
@@ -218,6 +226,41 @@
         border: none;
         padding: 0;
         margin-inline: 0;
+      }
+
+      .add-dialog.is-edit {
+        width: 22rem;
+        max-height: calc(100vh - 2rem);
+      }
+
+      .add-dialog.is-edit .add-dialog-inner {
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+      }
+
+      .add-dialog.is-edit .add-step-label {
+        display: none;
+      }
+
+      .add-dialog.is-edit .add-step[hidden],
+      .add-dialog.is-edit .add-step {
+        display: block;
+      }
+
+      .add-dialog.is-edit .add-field-label {
+        display: block;
+      }
+
+      .add-dialog.is-edit .add-step .add-dialog-actions {
+        display: none;
+      }
+
+      .add-dialog.is-edit #edit-actions {
+        display: flex;
+      }
+
+      #edit-actions {
+        display: none;
       }
 
       .checkbox-group {
@@ -706,6 +749,7 @@
         <p class="add-step-label" id="add-step-label">Place name</p>
 
         <section class="add-step" id="add-step-name" data-step="name" aria-labelledby="add-step-label">
+          <p class="add-field-label" id="add-label-name">Place name</p>
           <div class="add-field">
             <input
               class="text-input"
@@ -713,6 +757,7 @@
               id="add-place"
               placeholder="Place name"
               autocomplete="off"
+              aria-labelledby="add-label-name"
             />
           </div>
           <div class="add-dialog-actions">
@@ -724,6 +769,7 @@
         </section>
 
         <section class="add-step" id="add-step-area" data-step="area" hidden aria-labelledby="add-step-label">
+          <p class="add-field-label" id="add-label-area">Area</p>
           <div class="add-field">
             <div id="add-area-list" class="checkbox-group"></div>
             <input
@@ -732,6 +778,7 @@
               id="add-area-new"
               placeholder="New areas (comma-separated)"
               autocomplete="off"
+              aria-labelledby="add-label-area"
             />
             <p class="add-hint">Check one or more, or type new areas above.</p>
           </div>
@@ -744,6 +791,7 @@
         </section>
 
         <section class="add-step" id="add-step-category" data-step="category" hidden aria-labelledby="add-step-label">
+          <p class="add-field-label" id="add-label-category">Category</p>
           <div class="add-field">
             <div id="add-category-list" class="checkbox-group"></div>
             <input
@@ -752,6 +800,7 @@
               id="add-category-new"
               placeholder="New categories (comma-separated)"
               autocomplete="off"
+              aria-labelledby="add-label-category"
             />
             <p class="add-hint">Check one or more, or type new categories above.</p>
           </div>
@@ -764,12 +813,14 @@
         </section>
 
         <section class="add-step" id="add-step-notes" data-step="notes" hidden aria-labelledby="add-step-label">
+          <p class="add-field-label" id="add-label-notes">Notes</p>
           <div class="add-field">
             <textarea
               class="text-area"
               id="add-notes"
               placeholder="Notes"
               rows="4"
+              aria-labelledby="add-label-notes"
             ></textarea>
           </div>
           <div class="add-dialog-actions">
@@ -779,6 +830,13 @@
             <button type="submit" id="add-submit">Add</button>
           </div>
         </section>
+
+        <div class="add-dialog-actions" id="edit-actions">
+          <button type="button" class="add-dialog-cancel" id="edit-cancel">
+            Cancel
+          </button>
+          <button type="submit" id="edit-submit">Save</button>
+        </div>
       </form>
     </dialog>
 
@@ -1966,6 +2024,7 @@
         const isEdit = mode === "edit";
         addDialogTitle.textContent = isEdit ? "Edit place" : "Add place";
         addSubmitBtn.textContent = isEdit ? "Save" : "Add";
+        addDialog.classList.toggle("is-edit", isEdit);
       }
 
       function openAddDialog() {
@@ -1984,9 +2043,29 @@
         editPlace = { place, area, categoryKeys: [...categoryKeys] };
         addForm.reset();
         addWizard.areas = [area];
+        addWizard.categories = [...categoryKeys];
         addPlaceInput.value = place;
         setAddDialogMode("edit");
-        showAddStep("name");
+
+        populateAddAreaCheckboxes();
+        for (const areaName of addWizard.areas) {
+          precheckAddCheckbox(addAreaList, areaName);
+        }
+
+        populateAddCategoryCheckboxes();
+        for (const category of addWizard.categories) {
+          if (category) {
+            precheckAddCheckbox(addCategoryList, category);
+          }
+        }
+
+        addNotesInput.value = getPlaceNotes(area, categoryKeys[0], place);
+
+        for (const panel of Object.values(addSteps)) {
+          panel.hidden = false;
+        }
+        addStepLabel.textContent = "";
+
         addDialog.showModal();
         addPlaceInput.focus();
       }
@@ -2463,6 +2542,7 @@
 
       document.getElementById("add-open").addEventListener("click", openAddDialog);
       document.getElementById("add-cancel").addEventListener("click", closeAddDialog);
+      document.getElementById("edit-cancel").addEventListener("click", closeAddDialog);
       document.getElementById("view-all").addEventListener("click", openViewDialog);
       document.getElementById("view-close").addEventListener("click", closeViewDialog);
 
@@ -2603,6 +2683,10 @@
           return;
         }
 
+        if (editPlace || event.target === addNotesInput) {
+          return;
+        }
+
         const step = getAddStep();
         if (step === "name") {
           event.preventDefault();
@@ -2619,7 +2703,7 @@
       addForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        if (getAddStep() !== "notes") {
+        if (!editPlace && getAddStep() !== "notes") {
           return;
         }
 
@@ -2630,17 +2714,23 @@
         const notes = addNotesInput.value.trim();
 
         if (!placeName) {
-          showAddStep("name");
+          if (!editPlace) {
+            showAddStep("name");
+          }
           addPlaceInput.focus();
           return;
         }
         if (needsArea && areaNames.length === 0) {
-          showAddStep("area");
+          if (!editPlace) {
+            showAddStep("area");
+          }
           addAreaNew.focus();
           return;
         }
         if (categoryNames.length === 0) {
-          showAddStep("category");
+          if (!editPlace) {
+            showAddStep("category");
+          }
           addCategoryNew.focus();
           return;
         }
