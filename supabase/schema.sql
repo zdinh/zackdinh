@@ -3,7 +3,7 @@ create table public.places (
   name text not null,
   area text not null,
   category text not null,
-  active boolean not null default true,
+  status text not null default 'active' check (status in ('active', 'inactive', 'complete')),
   created_at timestamptz not null default now(),
   unique (name, area, category)
 );

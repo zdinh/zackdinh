@@ -411,12 +411,17 @@
 
       .status-indicator.active {
         border-radius: 50%;
-        background: #2d8a4e;
+        background: #7ec99a;
       }
 
       .status-indicator.inactive {
         border-radius: 0;
         background: #c53030;
+      }
+
+      .status-indicator.complete {
+        border-radius: 50%;
+        background: #1a5c2e;
       }
 
       .view-table th,
@@ -803,7 +808,9 @@
         </div>
         <button type="button" class="view-dialog-close" id="view-close">Close</button>
         <div id="view-row-menu" class="view-row-menu-panel">
-          <button type="button" class="view-row-menu-action" id="view-row-toggle-active">Mark inactive</button>
+          <button type="button" class="view-row-menu-action" id="view-row-mark-active" hidden>Mark active</button>
+          <button type="button" class="view-row-menu-action" id="view-row-mark-inactive" hidden>Mark inactive</button>
+          <button type="button" class="view-row-menu-action" id="view-row-mark-complete" hidden>Mark complete</button>
           <button type="button" class="view-row-menu-action" id="view-row-edit">Edit</button>
           <button type="button" class="view-row-menu-action" id="view-row-delete">Delete</button>
         </div>
@@ -827,6 +834,8 @@
     <script src="supabase/supabase-config.js"></script>
     <script>
       const STORAGE_KEY = "places-data";
+      const PLACE_STATUSES = ["active", "inactive", "complete"];
+      const DEFAULT_PLACE_STATUS = "active";
       const EVERYWHERE_AREA = "Everywhere";
       const BLANK_AREA = "";
       const PLACEHOLDER_AREA = "-";
@@ -891,7 +900,7 @@
 
           byKey.set(key, {
             ...existing,
-            active: existing.active !== false || normalized.active !== false,
+            status: preferredPlaceStatus(existing.status, normalized.status),
             notes: existing.notes || normalized.notes || null,
           });
         }
@@ -1030,7 +1039,7 @@
               name: placeName,
               area,
               category,
-              active: true,
+              status: DEFAULT_PLACE_STATUS,
               notes: notes || null,
             });
           }
@@ -1073,7 +1082,7 @@
           if (index !== -1) {
             places.splice(index, 1);
           }
-          clearPlaceActive(areaName, categoryName, placeName);
+          clearPlaceStatus(areaName, categoryName, placeName);
           clearPlaceNotes(areaName, categoryName, placeName);
         }
       }
@@ -1299,7 +1308,14 @@
       const viewRowMenu = document.getElementById("view-row-menu");
       const viewRowEdit = document.getElementById("view-row-edit");
       const viewRowDelete = document.getElementById("view-row-delete");
-      const viewRowToggleActive = document.getElementById("view-row-toggle-active");
+      const viewRowMarkActive = document.getElementById("view-row-mark-active");
+      const viewRowMarkInactive = document.getElementById("view-row-mark-inactive");
+      const viewRowMarkComplete = document.getElementById("view-row-mark-complete");
+      const viewRowStatusButtons = [
+        { el: viewRowMarkActive, status: "active" },
+        { el: viewRowMarkInactive, status: "inactive" },
+        { el: viewRowMarkComplete, status: "complete" },
+      ].filter(({ el }) => el);
       const deleteConfirmDialog = document.getElementById("delete-confirm-dialog");
       const deleteConfirmMessage = document.getElementById("delete-confirm-message");
       const deleteConfirmYes = document.getElementById("delete-confirm-yes");
@@ -1320,12 +1336,66 @@
         return `${area}\0${category}\0${name}`;
       }
 
-      function isPlaceActive(area, category, name) {
-        return placeStatus[placeStatusKey(area, category, name)] !== false;
+      function normalizePlaceStatus(value) {
+        return PLACE_STATUSES.includes(value) ? value : DEFAULT_PLACE_STATUS;
       }
 
-      function setPlaceActive(area, category, name, active) {
-        placeStatus[placeStatusKey(area, category, name)] = active;
+      function placeStatusFromRow(row) {
+        if (row.status) {
+          return normalizePlaceStatus(row.status);
+        }
+        return row.active === false ? "inactive" : DEFAULT_PLACE_STATUS;
+      }
+
+      function preferredPlaceStatus(left, right) {
+        const order = { active: 0, complete: 1, inactive: 2 };
+        const leftStatus = normalizePlaceStatus(left);
+        const rightStatus = normalizePlaceStatus(right);
+        return order[leftStatus] <= order[rightStatus] ? leftStatus : rightStatus;
+      }
+
+      function aggregatePlaceStatus(statuses) {
+        const normalized = statuses.map(normalizePlaceStatus);
+        if (normalized.every((status) => status === normalized[0])) {
+          return normalized[0];
+        }
+        if (normalized.includes("inactive")) {
+          return "inactive";
+        }
+        if (normalized.includes("complete")) {
+          return "complete";
+        }
+        return DEFAULT_PLACE_STATUS;
+      }
+
+      function formatPlaceStatus(status) {
+        return normalizePlaceStatus(status).replace(/^./, (char) => char.toUpperCase());
+      }
+
+      function placeRowForDb(row) {
+        const status = normalizePlaceStatus(row.status);
+        return {
+          ...row,
+          status,
+          active: status === "active",
+        };
+      }
+
+      function isPlaceActive(area, category, name) {
+        return getPlaceStatus(area, category, name) === "active";
+      }
+
+      function isPlacePickable(area, category, name) {
+        const status = getPlaceStatus(area, category, name);
+        return status === "active" || status === "complete";
+      }
+
+      function getPlaceStatus(area, category, name) {
+        return normalizePlaceStatus(placeStatus[placeStatusKey(area, category, name)]);
+      }
+
+      function setPlaceStatus(area, category, name, status) {
+        placeStatus[placeStatusKey(area, category, name)] = normalizePlaceStatus(status);
       }
 
       function getPlaceNotes(area, category, name) {
@@ -1345,7 +1415,7 @@
         delete placeNotes[placeStatusKey(area, category, name)];
       }
 
-      function clearPlaceActive(area, category, name) {
+      function clearPlaceStatus(area, category, name) {
         delete placeStatus[placeStatusKey(area, category, name)];
       }
 
@@ -1354,11 +1424,13 @@
         placeNotes = {};
       }
 
-      function createStatusIndicator(active) {
+      function createStatusIndicator(status) {
+        const normalized = normalizePlaceStatus(status);
         const indicator = document.createElement("span");
-        indicator.className = active ? "status-indicator active" : "status-indicator inactive";
-        indicator.setAttribute("aria-label", active ? "Active" : "Inactive");
-        indicator.title = active ? "Active" : "Inactive";
+        indicator.className = `status-indicator ${normalized}`;
+        const label = formatPlaceStatus(normalized);
+        indicator.setAttribute("aria-label", label);
+        indicator.title = label;
         return indicator;
       }
 
@@ -1423,7 +1495,7 @@
         const data = {};
         for (const row of rows) {
           const area = areaForRow(row);
-          setPlaceActive(area, row.category, row.name, row.active !== false);
+          setPlaceStatus(area, row.category, row.name, placeStatusFromRow(row));
           if (row.notes) {
             setPlaceNotes(area, row.category, row.name, row.notes);
           }
@@ -1456,7 +1528,7 @@
                   name,
                   area,
                   category,
-                  active: isPlaceActive(area, category, name),
+                  status: getPlaceStatus(area, category, name),
                   notes: getPlaceNotes(area, category, name) || null,
                 });
               }
@@ -1487,12 +1559,22 @@
       async function fetchPlacesRows() {
         let { data, error } = await supabaseClient
           .from("places")
-          .select("id, name, area, category, active, notes");
+          .select("id, name, area, category, status, active, notes");
 
         if (error) {
-          const retry = await supabaseClient.from("places").select("id, name, area, category");
-          data = retry.data?.map((row) => ({ ...row, active: true, notes: null })) ?? null;
+          const retry = await supabaseClient.from("places").select("id, name, area, category, active, notes");
+          data =
+            retry.data?.map((row) => ({
+              ...row,
+              status: placeStatusFromRow(row),
+              notes: row.notes ?? null,
+            })) ?? null;
           error = retry.error;
+        } else if (data) {
+          data = data.map((row) => ({
+            ...row,
+            status: placeStatusFromRow(row),
+          }));
         }
 
         return { data, error };
@@ -1531,7 +1613,9 @@
         const hasLocalPlaces = localRows.some((row) => row.name && row.category);
 
         if (hasLocalPlaces) {
-          const { error: insertError } = await supabaseClient.from("places").upsert(localRows, {
+          const { error: insertError } = await supabaseClient
+            .from("places")
+            .upsert(localRows.map(placeRowForDb), {
             onConflict: "name,area,category",
           });
           if (insertError) {
@@ -1562,11 +1646,11 @@
         }
 
         for (const row of rows) {
-          setPlaceActive(row.area, row.category, placeName, true);
+          setPlaceStatus(row.area, row.category, placeName, DEFAULT_PLACE_STATUS);
           setPlaceNotes(row.area, row.category, placeName, notes);
         }
 
-        const { error } = await supabaseClient.from("places").upsert(rows, {
+        const { error } = await supabaseClient.from("places").upsert(rows.map(placeRowForDb), {
           onConflict: "name,area,category",
         });
         if (error) {
@@ -1574,9 +1658,10 @@
         }
       }
 
-      async function persistSetActive(area, place, categoryKeys, active) {
+      async function persistSetStatus(area, place, categoryKeys, status) {
+        const normalized = normalizePlaceStatus(status);
         for (const category of categoryKeys) {
-          setPlaceActive(area, category, place, active);
+          setPlaceStatus(area, category, place, normalized);
         }
 
         if (!supabaseClient) {
@@ -1584,9 +1669,13 @@
         }
 
         for (const category of categoryKeys) {
+          const payload = {
+            status: normalized,
+            active: normalized === "active",
+          };
           const { error } = await supabaseClient
             .from("places")
-            .update({ active })
+            .update(payload)
             .eq("name", place)
             .eq("area", area)
             .eq("category", category);
@@ -1986,7 +2075,7 @@
           if (index !== -1) {
             places.splice(index, 1);
           }
-          clearPlaceActive(areaName, category, placeName);
+          clearPlaceStatus(areaName, category, placeName);
           clearPlaceNotes(areaName, category, placeName);
         }
       }
@@ -2004,7 +2093,7 @@
           places.push(placeName);
           places.sort((a, b) => a.localeCompare(b));
         }
-        setPlaceActive(areaName, categoryName, placeName, true);
+        setPlaceStatus(areaName, categoryName, placeName, DEFAULT_PLACE_STATUS);
       }
 
       function setPlaceNotesForAll(areaNames, categoryNames, placeName, notes) {
@@ -2018,24 +2107,24 @@
       function getPickPool(area, category) {
         if (isMovieCategory(category)) {
           return (namesByArea[BLANK_AREA]?.[category] ?? []).filter((name) =>
-            isPlaceActive(BLANK_AREA, category, name)
+            isPlacePickable(BLANK_AREA, category, name)
           );
         }
 
         if (area === EVERYWHERE_AREA) {
           return (namesByArea[EVERYWHERE_AREA]?.[category] ?? []).filter((name) =>
-            isPlaceActive(EVERYWHERE_AREA, category, name)
+            isPlacePickable(EVERYWHERE_AREA, category, name)
           );
         }
 
         const pool = new Set();
         for (const name of namesByArea[area]?.[category] ?? []) {
-          if (isPlaceActive(area, category, name)) {
+          if (isPlacePickable(area, category, name)) {
             pool.add(name);
           }
         }
         for (const name of namesByArea[EVERYWHERE_AREA]?.[category] ?? []) {
-          if (isPlaceActive(EVERYWHERE_AREA, category, name)) {
+          if (isPlacePickable(EVERYWHERE_AREA, category, name)) {
             pool.add(name);
           }
         }
@@ -2061,15 +2150,15 @@
         return [...grouped.values()]
           .map(({ place, area, categories }) => {
             const categoryKeys = [...categories].sort((a, b) => a.localeCompare(b));
-            const active = categoryKeys.every((category) =>
-              isPlaceActive(area, category, place)
+            const status = aggregatePlaceStatus(
+              categoryKeys.map((category) => getPlaceStatus(area, category, place))
             );
             const displayArea = displayAreaForRow(area, categoryKeys);
             return {
               place,
               area: displayArea,
               categoryKeys,
-              active,
+              status,
               category: categoryKeys.map(formatLabel).join(", "),
               notes: getPlaceNotes(displayArea, categoryKeys[0], place),
             };
@@ -2087,7 +2176,7 @@
           if (index !== -1) {
             places.splice(index, 1);
           }
-          clearPlaceActive(area, category, place);
+          clearPlaceStatus(area, category, place);
           clearPlaceNotes(area, category, place);
         }
 
@@ -2121,23 +2210,24 @@
         }
       }
 
-      function openViewRowMenu(menuButton, area, place, categoryKeys, active) {
+      function openViewRowMenu(menuButton, area, place, categoryKeys, status) {
         if (!viewRowMenu || !viewRowDelete) {
           return;
         }
         activeMenuButton = menuButton;
         menuButton.setAttribute("aria-expanded", "true");
 
-        const menuActions = [viewRowToggleActive, viewRowEdit, viewRowDelete].filter(Boolean);
+        const menuActions = [...viewRowStatusButtons.map(({ el }) => el), viewRowEdit, viewRowDelete].filter(
+          Boolean
+        );
         for (const menuAction of menuActions) {
           menuAction.dataset.area = area;
           menuAction.dataset.place = place;
           menuAction.dataset.categories = JSON.stringify(categoryKeys);
-          menuAction.dataset.active = active ? "1" : "0";
         }
 
-        if (viewRowToggleActive) {
-          viewRowToggleActive.textContent = active ? "Mark inactive" : "Mark active";
+        for (const { el, status: buttonStatus } of viewRowStatusButtons) {
+          el.hidden = buttonStatus === status;
         }
 
         viewRowMenu.classList.add("is-open");
@@ -2157,7 +2247,7 @@
         viewRowMenu.style.left = `${left}px`;
       }
 
-      function createRowMenuButton(place, area, categoryKeys, active) {
+      function createRowMenuButton(place, area, categoryKeys, status) {
         const menu = document.createElement("div");
         menu.className = "view-row-menu";
 
@@ -2174,7 +2264,7 @@
           const isOpen = activeMenuButton === menuButton && viewRowMenu.classList.contains("is-open");
           closeViewRowMenus();
           if (!isOpen) {
-            openViewRowMenu(menuButton, area, place, categoryKeys, active);
+            openViewRowMenu(menuButton, area, place, categoryKeys, status);
           }
         });
 
@@ -2237,12 +2327,12 @@
           return;
         }
 
-        for (const { place, category, area, categoryKeys, active, notes } of rows) {
+        for (const { place, category, area, categoryKeys, status, notes } of rows) {
           const row = document.createElement("tr");
 
           const statusCell = document.createElement("td");
           statusCell.className = "status-cell";
-          statusCell.appendChild(createStatusIndicator(active));
+          statusCell.appendChild(createStatusIndicator(status));
           row.appendChild(statusCell);
 
           const placeCell = document.createElement("td");
@@ -2270,16 +2360,16 @@
 
           const actionsCell = document.createElement("td");
           actionsCell.className = "view-row-actions";
-          actionsCell.appendChild(createRowMenuButton(place, area, categoryKeys, active));
+          actionsCell.appendChild(createRowMenuButton(place, area, categoryKeys, status));
           row.appendChild(actionsCell);
 
           tbody.appendChild(row);
         }
       }
 
-      async function setRowActive(area, place, categoryKeys, active) {
+      async function setRowStatus(area, place, categoryKeys, status) {
         try {
-          await persistSetActive(area, place, categoryKeys, active);
+          await persistSetStatus(area, place, categoryKeys, status);
         } catch (error) {
           showError("Could not update status.");
           console.error(error);
@@ -2396,20 +2486,21 @@
         closeViewRowMenus();
       });
 
-      viewRowToggleActive?.addEventListener("click", async (event) => {
-        event.stopPropagation();
-        if (!viewRowToggleActive.dataset.categories) {
-          return;
-        }
-        const nextActive = viewRowToggleActive.dataset.active !== "1";
-        await setRowActive(
-          viewRowToggleActive.dataset.area,
-          viewRowToggleActive.dataset.place,
-          JSON.parse(viewRowToggleActive.dataset.categories),
-          nextActive
-        );
-        closeViewRowMenus();
-      });
+      for (const { el, status } of viewRowStatusButtons) {
+        el?.addEventListener("click", async (event) => {
+          event.stopPropagation();
+          if (!el.dataset.categories) {
+            return;
+          }
+          await setRowStatus(
+            el.dataset.area,
+            el.dataset.place,
+            JSON.parse(el.dataset.categories),
+            status
+          );
+          closeViewRowMenus();
+        });
+      }
 
       viewRowDelete?.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -2498,7 +2589,7 @@
               ? everywherePlaces.length > 0
               : areaPlaces.length > 0 || everywherePlaces.length > 0;
           document.getElementById("result").textContent = hasAnyPlaces
-            ? "No active places"
+            ? "No places to pick"
             : "No places yet";
           return;
         }

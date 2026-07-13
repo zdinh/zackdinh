@@ -17,7 +17,7 @@ function rowsFromSeed(data) {
       }
       for (const name of places) {
         if (name) {
-          rows.push({ name, area, category, active: true });
+          rows.push({ name, area, category, status: "active" });
         }
       }
     }
