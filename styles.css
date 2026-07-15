@@ -596,11 +596,16 @@ img {
 .resume-group-collapsible {
   border-top: 1px solid #e3e3e3;
   padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
 }
 
-.resume-group-collapsible-publications {
+/* Cancel parent grid gap so collapsed rows share one divider + equal padding */
+.resume-group-collapsible + .resume-group-collapsible {
+  margin-top: -2rem;
+}
+
+.resume-group-collapsible:last-child {
   border-bottom: 1px solid #e3e3e3;
-  padding-bottom: 1.25rem;
   margin-bottom: 2rem;
 }
 
@@ -610,6 +615,7 @@ img {
   justify-content: space-between;
   cursor: pointer;
   list-style: none;
+  min-height: 1.5rem;
 }
 
 .resume-group-collapsible summary::-webkit-details-marker {
