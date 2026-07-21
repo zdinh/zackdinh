@@ -2,27 +2,32 @@ name: Keep Supabase alive
 
 # Free-tier Supabase projects pause after ~7 days with insufficient database activity.
 # Auth health checks do NOT count — we must hit Postgres via the REST API.
+# Supabase expects a few user DB requests per day; a single daily SELECT is often not enough.
 on:
   schedule:
-    # Daily at 12:00 UTC — Supabase expects a few DB requests per day over the week.
-    - cron: "0 12 * * *"
+    # Three times daily (00:00, 08:00, 16:00 UTC).
+    - cron: "0 0,8,16 * * *"
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Query keepalive table via REST API
+      - name: Update keepalive row via REST API
         run: |
           base="${{ secrets.PLACES_SUPABASE_URL }}"
           key="${{ secrets.PLACES_SUPABASE_ANON_KEY }}"
-          response=$(curl -s -o /tmp/body -w "%{http_code}" \
-            "${base}/rest/v1/keepalive?select=id&limit=1" \
+          timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          response=$(curl -s -o /tmp/body -w "%{http_code}" -X PATCH \
+            "${base}/rest/v1/keepalive?id=eq.1" \
             -H "apikey: ${key}" \
-            -H "Authorization: Bearer ${key}")
-          echo "HTTP $response"
+            -H "Authorization: Bearer ${key}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "{\"pinged_at\": \"${timestamp}\"}")
+          echo "HTTP $response (pinged_at=${timestamp})"
           cat /tmp/body
-          if [ "$response" != "200" ]; then
-            echo "Keepalive query failed. Run supabase/keepalive.sql in the SQL Editor if the table is missing."
+          if [ "$response" != "204" ] && [ "$response" != "200" ]; then
+            echo "Keepalive update failed. Re-run supabase/keepalive.sql in the SQL Editor (UPDATE policy required)."
             exit 1
           fi

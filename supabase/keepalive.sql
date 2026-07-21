@@ -17,4 +17,12 @@ create policy "Anon read keepalive"
   to anon, authenticated
   using (true);
 
-grant select on public.keepalive to anon, authenticated;
+drop policy if exists "Anon update keepalive" on public.keepalive;
+create policy "Anon update keepalive"
+  on public.keepalive
+  for update
+  to anon, authenticated
+  using (id = 1)
+  with check (id = 1);
+
+grant select, update on public.keepalive to anon, authenticated;
