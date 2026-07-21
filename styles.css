@@ -514,6 +514,18 @@ img {
   line-height: 1.8;
 }
 
+.geographer-highlights {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.geographer-highlights li + li {
+  margin-top: 0.85rem;
+}
+
 .geographer-copy-column a {
   color: #6c6c6c;
   font-weight: 700;
