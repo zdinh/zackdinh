@@ -94,6 +94,10 @@
     });
   }
 
+  function getSlideSource(slide) {
+    return slide?.dataset?.fullSrc || slide?.getAttribute?.("data-full-src") || slide?.currentSrc || slide?.src || "";
+  }
+
   function getSlidesFromFigure(figure) {
     const thumb = figure.querySelector(".woodworking-gallery-trigger img");
     const template = figure.querySelector(".woodworking-gallery-images");
@@ -119,7 +123,7 @@
     if (!slide) return;
 
     setImageOrientation(lightboxImg, slide);
-    lightboxImg.src = slide.currentSrc || slide.src;
+    lightboxImg.src = getSlideSource(slide);
     lightboxImg.alt = slide.alt;
 
     if (!slide.naturalWidth) {
@@ -137,7 +141,7 @@
     const slide = slides[slideIndex];
     if (!slide || !zoomImg) return;
 
-    zoomImg.src = slide.currentSrc || slide.src;
+    zoomImg.src = getSlideSource(slide);
     zoomImg.alt = slide.alt;
   }
 
