@@ -153,6 +153,11 @@
     zoomDialog.showModal();
   }
 
+  const CHEVRON_PREV =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+  const CHEVRON_NEXT =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
   function initZoomLightbox() {
     if (!zoomDialog || !zoomImg || !lightboxImg || zoomDialog.dataset.zoomInit === "true") return;
 
@@ -162,13 +167,13 @@
     zoomPrevButton.type = "button";
     zoomPrevButton.className = "image-lightbox-control image-lightbox-control--prev";
     zoomPrevButton.setAttribute("aria-label", "Previous image");
-    zoomPrevButton.innerHTML = "&#8249;";
+    zoomPrevButton.innerHTML = CHEVRON_PREV;
 
     const zoomNextButton = document.createElement("button");
     zoomNextButton.type = "button";
     zoomNextButton.className = "image-lightbox-control image-lightbox-control--next";
     zoomNextButton.setAttribute("aria-label", "Next image");
-    zoomNextButton.innerHTML = "&#8250;";
+    zoomNextButton.innerHTML = CHEVRON_NEXT;
 
     zoomPrevButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -299,13 +304,13 @@
     imagePrevButton.type = "button";
     imagePrevButton.className = "image-carousel-control image-carousel-control--prev";
     imagePrevButton.setAttribute("aria-label", "Previous image");
-    imagePrevButton.innerHTML = "&#8249;";
+    imagePrevButton.innerHTML = CHEVRON_PREV;
 
     imageNextButton = document.createElement("button");
     imageNextButton.type = "button";
     imageNextButton.className = "image-carousel-control image-carousel-control--next";
     imageNextButton.setAttribute("aria-label", "Next image");
-    imageNextButton.innerHTML = "&#8250;";
+    imageNextButton.innerHTML = CHEVRON_NEXT;
 
     imagePrevButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -330,14 +335,14 @@
     projectPrevButton.className =
       "woodworking-lightbox-project-control woodworking-lightbox-project-control--prev";
     projectPrevButton.setAttribute("aria-label", "Previous project");
-    projectPrevButton.innerHTML = "&#8249;";
+    projectPrevButton.innerHTML = CHEVRON_PREV;
 
     projectNextButton = document.createElement("button");
     projectNextButton.type = "button";
     projectNextButton.className =
       "woodworking-lightbox-project-control woodworking-lightbox-project-control--next";
     projectNextButton.setAttribute("aria-label", "Next project");
-    projectNextButton.innerHTML = "&#8250;";
+    projectNextButton.innerHTML = CHEVRON_NEXT;
 
     projectPrevButton.addEventListener("click", (event) => {
       event.stopPropagation();

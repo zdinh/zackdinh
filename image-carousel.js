@@ -1,6 +1,11 @@
 (function () {
   let lightboxState = null;
 
+  const CHEVRON_PREV =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+  const CHEVRON_NEXT =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
   function initLightboxNav(dialog) {
     if (!dialog || dialog.dataset.navInit === "true") return;
 
@@ -10,13 +15,13 @@
     prevButton.type = "button";
     prevButton.className = "image-lightbox-control image-lightbox-control--prev";
     prevButton.setAttribute("aria-label", "Previous image");
-    prevButton.innerHTML = "&#8249;";
+    prevButton.innerHTML = CHEVRON_PREV;
 
     const nextButton = document.createElement("button");
     nextButton.type = "button";
     nextButton.className = "image-lightbox-control image-lightbox-control--next";
     nextButton.setAttribute("aria-label", "Next image");
-    nextButton.innerHTML = "&#8250;";
+    nextButton.innerHTML = CHEVRON_NEXT;
 
     prevButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -87,13 +92,13 @@
       prevButton.type = "button";
       prevButton.className = "image-carousel-control image-carousel-control--prev";
       prevButton.setAttribute("aria-label", "Previous image");
-      prevButton.innerHTML = "&#8249;";
+      prevButton.innerHTML = CHEVRON_PREV;
 
       const nextButton = document.createElement("button");
       nextButton.type = "button";
       nextButton.className = "image-carousel-control image-carousel-control--next";
       nextButton.setAttribute("aria-label", "Next image");
-      nextButton.innerHTML = "&#8250;";
+      nextButton.innerHTML = CHEVRON_NEXT;
 
       prevButton.addEventListener("click", (event) => {
         event.stopPropagation();
