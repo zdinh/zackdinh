@@ -4,92 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contact | Zack Dinh</title>
-    <meta
-      name="description"
-      content="Contact information for Zack Dinh."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css?v=20260418-2" />
-  </head>
-  <body class="contact-page">
-    <header class="site-header site-header-light">
-      <a class="site-brand" href="/index.html">Zack Dinh</a>
-
-      <details class="site-menu">
-        <summary class="site-menu-toggle" aria-label="Open navigation menu">
-          <span></span>
-          <span></span>
-        </summary>
-        <nav class="site-nav" aria-label="Primary">
-          <a href="/about.html">About</a>
-          <a href="/geography.html">Geography</a>
-          <a href="/woodworking.html">Woodworking</a>
-          <a href="/contact.html">Contact</a>
-        </nav>
-      </details>
-    </header>
-
-    <main class="contact-layout">
-      <section class="contact-title-column">
-        <h1>Contact</h1>
-      </section>
-
-      <section class="contact-details-column" aria-label="Contact details">
-        <p class="contact-location">Let's connect! I am based in Long Beach, California.</p>
-        <p class="contact-email">
-          <button class="contact-email-address contact-copy-button" type="button" aria-label="Copy email address" data-email="zack.dinh@gmail.com">zack.dinh@gmail.com</button>
-        </p>
-        <div class="contact-links" aria-label="Contact links">
-          <button class="contact-icon-link contact-copy-button" type="button" aria-label="Copy email address" data-email="zack.dinh@gmail.com">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M3 6.75A1.75 1.75 0 0 1 4.75 5h14.5A1.75 1.75 0 0 1 21 6.75v10.5A1.75 1.75 0 0 1 19.25 19H4.75A1.75 1.75 0 0 1 3 17.25V6.75Zm1.8-.25 7.2 5.67 7.2-5.67H4.8Zm14.7 11V8.42l-6.88 5.42a1 1 0 0 1-1.24 0L4.5 8.42v9.08c0 .28.22.5.5.5h14a.5.5 0 0 0 .5-.5Z"></path>
-            </svg>
-          </button>
-          <a class="contact-icon-link" href="https://www.instagram.com/dyatica/" target="_blank" rel="noreferrer" aria-label="Zack Dinh on Instagram">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7.5 3h9A4.5 4.5 0 0 1 21 7.5v9a4.5 4.5 0 0 1-4.5 4.5h-9A4.5 4.5 0 0 1 3 16.5v-9A4.5 4.5 0 0 1 7.5 3Zm0 1.5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h9a3 3 0 0 0 3-3v-9a3 3 0 0 0-3-3h-9Zm10.25 1.75a1 1 0 1 1 0 2 1 1 0 0 1 0-2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5A3.5 3.5 0 1 0 12 15.5 3.5 3.5 0 0 0 12 8.5Z"></path>
-            </svg>
-          </a>
-        </div>
-        <p class="contact-copy-status" aria-live="polite" aria-atomic="true"></p>
-      </section>
-    </main>
+    <meta http-equiv="refresh" content="0; url=/#contact" />
+    <link rel="canonical" href="/#contact" />
     <script>
-      const copyButtons = document.querySelectorAll(".contact-copy-button");
-      const copyStatus = document.querySelector(".contact-copy-status");
-
-      if (copyButtons.length && copyStatus) {
-        let resetTimer;
-
-        const showCopyStatus = (message) => {
-          copyStatus.textContent = message;
-          copyStatus.classList.add("contact-copy-status-visible");
-          window.clearTimeout(resetTimer);
-          resetTimer = window.setTimeout(() => {
-            copyStatus.textContent = "";
-            copyStatus.classList.remove("contact-copy-status-visible");
-          }, 1800);
-        };
-
-        copyButtons.forEach((button) => {
-          button.addEventListener("click", async () => {
-            const email = button.dataset.email;
-            if (!email) return;
-
-            try {
-              await navigator.clipboard.writeText(email);
-              showCopyStatus("Email copied");
-            } catch {
-              showCopyStatus("Unable to copy");
-            }
-          });
-        });
-      }
+      location.replace("/#contact");
     </script>
+  </head>
+  <body>
+    <p><a href="/#contact">Continue to Contact</a></p>
   </body>
 </html>
