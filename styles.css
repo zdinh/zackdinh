@@ -54,8 +54,7 @@ img {
   min-height: 2.4rem;
   font-family: "Times New Roman", Times, serif;
   font-size: 1rem;
-  font-weight: 1000;
-  letter-spacing: 0.08em;
+  font-weight: 400;
   text-transform: uppercase;
 }
 
@@ -80,9 +79,9 @@ img {
   width: 2.4rem;
   min-height: 2.4rem;
   padding: 0.45rem;
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  border: none;
   border-radius: 0.25rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: transparent;
   cursor: pointer;
   list-style: none;
 }
@@ -94,7 +93,7 @@ img {
 .site-menu-toggle span {
   display: block;
   width: 100%;
-  height: 1.5px;
+  height: 1px;
   background: currentColor;
 }
 
@@ -102,7 +101,7 @@ img {
   display: flex;
   gap: 1.25rem;
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .site-menu > .site-nav {
@@ -117,9 +116,10 @@ img {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.35rem;
   background: rgba(20, 20, 20, 0.92);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: none;
   font-family: "Times New Roman", Times, serif;
   font-size: 0.88rem;
+  font-weight: 400;
 }
 
 .site-menu > .site-nav a {
@@ -131,32 +131,33 @@ img {
 }
 
 .home-page .site-menu-toggle {
-  color: #6c6c6c;
-  border-color: #d9d9d9;
-  background: rgba(255, 255, 255, 0.85);
+  color: #111111;
+  background: transparent;
 }
 
 .home-page .site-menu > .site-nav {
-  color: #6c6c6c;
+  color: #111111;
   border-color: #d9d9d9;
   background: rgba(255, 255, 255, 0.98);
 }
 
 .site-header-light {
-  color: #6c6c6c;
+  color: #111111;
 }
 
 .site-header-light .site-menu-toggle {
-  border-color: #d9d9d9;
-  background: rgba(255, 255, 255, 0.85);
+  color: #111111;
+  background: transparent;
 }
 
 .site-header-light .site-brand,
 .site-header-light .site-nav a {
+  color: #111111;
   text-shadow: none;
 }
 
 .site-header-light .site-menu > .site-nav {
+  color: #111111;
   border-color: #d9d9d9;
   background: rgba(255, 255, 255, 0.98);
 }
