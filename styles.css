@@ -753,6 +753,10 @@ img {
   margin-top: 1.25rem;
 }
 
+.resume-item ul ul {
+  margin-top: 0.45rem;
+}
+
 .resume-item p {
   margin: 0 0 0.5rem;
   font-size: 1rem;
